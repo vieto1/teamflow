@@ -32,7 +32,8 @@ jobs:
           from pathlib import Path
           p=Path('src/app/page.tsx')
           s=p.read_text()
-          s=s.replace("async function analyze(e:ChangeEvent<HTMLInputElement>){", "async function analyze(e:ChangeEvent<HTMLInputElement>){setMessage('Die KI-Audioanalyse benötigt einen zusätzlichen Server. Agenda und Aufgaben funktionieren direkt hier.');if(fileRef.current)fileRef.current.value='';return;")
+          import re
+          s=re.sub(r' async function analyze.*? function updateStatus', " async function analyze(e:ChangeEvent<HTMLInputElement>){setMessage('Die KI-Audioanalyse benötigt einen zusätzlichen Server.');if(fileRef.current)fileRef.current.value='';} function updateStatus", s, flags=re.S)
           p.write_text(s)
           PY
       - run: npm run build
