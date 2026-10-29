@@ -1,0 +1,54 @@
+name: Publish Teamflow
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Prepare GitHub Pages version
+        run: |
+          rm -rf src/app/api
+          cat > next.config.ts <<'CONFIG'
+          import type { NextConfig } from 'next';
+          const config: NextConfig = { output: 'export', basePath: '/teamflow', images: { unoptimized: true } };
+          export default config;
+          CONFIG
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('src/app/page.tsx')
+          s=p.read_text()
+          s=s.replace("async function analyze(e:ChangeEvent<HTMLInputElement>){", "async function analyze(e:ChangeEvent<HTMLInputElement>){setMessage('Die KI-Audioanalyse benötigt einen zusätzlichen Server. Agenda und Aufgaben funktionieren direkt hier.');if(fileRef.current)fileRef.current.value='';return;")
+          p.write_text(s)
+          PY
+      - run: npm run build
+      - uses: actions/configure-pages@v5
+        with:
+          enablement: true
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: out
+  deploy:
+    needs: build
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
