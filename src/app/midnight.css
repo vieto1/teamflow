@@ -101,3 +101,25 @@ body{background:radial-gradient(ellipse at 1% 8%,#5f9abb22,transparent 37%),radi
 .meeting-dashboard .meeting-week-toolbar{flex-wrap:wrap}.meeting-dashboard .meeting-jump-next{color:var(--meeting-blue);border-color:#82aeff60;background:#669cff0d}
 
 .overview .meeting-dashboard .panel-heading p{display:block;margin:7px 0 0;font-size:12px;color:var(--text-soft);line-height:1.5}
+
+/* Keep header controls and sync status in separate document rows. */
+.main-area>.topbar{position:relative;inset:auto;display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:12px;height:auto;min-height:48px;margin:28px 30px 0;padding:0;border:0;z-index:6}
+.main-area>.topbar>.global-search{flex:1 1 220px;min-width:0;width:auto;max-width:480px;height:46px}
+.main-area>.topbar>.top-actions{display:flex;align-items:center;flex:0 0 auto;gap:12px;min-width:0}
+.main-area>.topbar .theme-switch{flex-shrink:0;margin:0;height:44px;display:flex;align-items:center}
+.main-area>.topbar .top-actions>.avatar{flex:0 0 42px;width:42px;height:42px}
+.main-area>.page-content{padding-top:22px;min-width:0}
+.sync-status{width:100%;min-width:0}
+.sync-status-row{min-width:0;gap:12px}
+.sync-state{min-width:0;flex:1 1 220px}
+.sync-controls{flex-wrap:wrap;flex:0 1 auto;justify-content:flex-end}
+.sidebar{width:248px;min-width:248px}
+.main-area{margin-left:272px}
+.sidebar nav{display:flex;flex-direction:column;min-width:0;gap:12px}
+.sidebar .nav-item{box-sizing:border-box;width:100%;max-width:100%;min-width:0;flex-shrink:0;display:flex;align-items:center;justify-content:flex-start;gap:12px;padding:0 12px;font-size:14px;white-space:nowrap;margin:0}
+.sidebar .nav-icon{flex:0 0 25px;width:25px}
+@media(min-width:1600px){.main-area>.topbar{margin-top:32px}}
+@media(max-width:1250px){.sidebar{width:220px;min-width:220px}.main-area{margin-left:244px}.sidebar .nav-item{font-size:13px;gap:10px;padding:0 10px}.main-area>.topbar{margin:26px 24px 0}}
+@media(max-width:850px) and (min-width:791px){.sidebar{width:200px;min-width:200px}.main-area{margin-left:216px}.sidebar .nav-item{font-size:12px;gap:8px;padding:0 8px}.sidebar .nav-icon{flex-basis:23px;width:23px}.main-area>.topbar{margin:24px 20px 0}}
+@media(max-width:790px){.sidebar{inset:12px auto 12px 12px;width:68px;min-width:68px;padding:24px 7px 20px}.main-area{margin:12px 12px 12px 80px}.sidebar .nav-item{font-size:0;padding:0;justify-content:center;gap:0;height:46px}.sidebar .nav-icon{font-size:20px;flex:0 0 25px}.sidebar .brand-word{display:none}.sidebar .brand{padding-left:0;padding-right:0;justify-content:center}.sidebar .brand-symbol{flex-shrink:0;width:34px;height:38px}.sidebar .profile>div:not(.avatar){display:none}.sidebar .profile{padding:0;justify-content:center}.main-area>.topbar{margin:20px 18px 0}.main-area>.topbar>.global-search{max-width:none;flex-basis:150px}.main-area>.page-content{padding-top:20px}}
+@media(max-width:480px){.main-area>.topbar{margin:16px 14px 0;gap:10px}.main-area>.topbar>.global-search{flex:1 1 100%;height:42px}.main-area>.topbar>.top-actions{margin-left:auto}.main-area>.topbar .theme-switch{height:38px}.main-area>.topbar .top-actions>.avatar{display:none}.sync-controls{width:100%;justify-content:flex-start}.sync-state{flex-basis:100%}.sidebar{width:60px;min-width:60px;inset:10px auto 10px 10px;padding-inline:5px}.main-area{margin-left:70px;margin-right:10px}}
