@@ -4,7 +4,7 @@ Deutschsprachiges Team-Dashboard mit Agenda, Aufgaben, Statistik und eingebettet
 
 ## Nutzung
 
-Öffne einmal den privaten Team-Einladungslink auf jedem Gerät. Der Zugangsparameter steht im URL-Fragment, wird aus der Adressleiste entfernt und anschließend lokal gespeichert. Der normale GitHub-Link öffnet auf diesem Gerät danach denselben Workspace. Über „Team einladen“ kann ein berechtigtes Teammitglied den Link kopieren. Wer den Link besitzt, hat Lese- und Schreibzugriff; nur innerhalb des Teams teilen. Die Zugangsdaten sind nicht im Repository enthalten.
+Öffne https://vieto1.github.io/teamflow/ auf einem beliebigen Gerät. Es gibt keine Anmeldung und keinen Teamlink. Jeder mit der Website-Adresse kann den gemeinsamen Workspace lesen und bearbeiten. „Team einladen“ kopiert die normale Website-Adresse.
 
 Der Datenstand wird beim Öffnen, beim Zurückkehren zum Tab, nach Wiederherstellung der Verbindung und in sichtbaren Tabs alle zehn Sekunden geladen. Änderungen erscheinen sofort lokal und werden automatisch gespeichert. Offline-Änderungen bleiben als Warteschlange im Browser. Die Oberfläche zeigt ausstehende Änderungen und Verbindungsfehler ausdrücklich an.
 
@@ -21,16 +21,16 @@ npm ci
 npm run dev
 ```
 
-Öffne http://localhost:3000. Derselbe private Teamlink lässt sich in das Zugangsfeld einfügen. Das Frontend benötigt keine Service-Role-Schlüssel. Die konfigurierte Edge Function akzeptiert den GitHub-Ursprung und lokale Entwicklung auf Port 3000.
+Öffne http://localhost:3000. Der gemeinsame Workspace lädt direkt. Das Frontend benötigt keine Service-Role-Schlüssel. Die konfigurierte Edge Function akzeptiert den GitHub-Ursprung und lokale Entwicklung auf Port 3000.
 
 ## Backend
 
 - `src/lib/team-sync-core.ts`: gemeinsame Vergleichs-, Validierungs- und Konfliktlogik.
 - `src/lib/use-team-sync.ts`: gemeinsamer Clientzustand, Aktualisierung, Warteschlange und Offline-Sicherung.
-- `supabase/functions/teamflow-sync/`: Edge Function mit eigener Team-Key-Prüfung. Der Team-Key wird nur als SHA-256-Hash in der Datenbank gespeichert. Service-Role-Schlüssel bleiben ausschließlich in der Edge-Laufzeit.
+- `supabase/functions/teamflow-sync/`: Öffentliche Edge Function für den gemeinsamen Workspace. Service-Role-Schlüssel bleiben ausschließlich in der Edge-Laufzeit.
 - `supabase/schema.sql`: Schema-Snapshot ohne Zugangsgeheimnisse oder Nutzerdaten.
 
-Direkter Datenbankzugriff für `anon` und `authenticated` ist gesperrt. Beide Tabellen haben aktiviertes RLS und explizite Ablehnungsregeln. Die Edge Function prüft den Team-Key und schreibt den Workspace mit atomarem Compare-and-Swap über die Revisionsnummer. Ein Team-Key kann durch Deaktivieren seines Eintrags in `teamflow_access_keys` widerrufen werden. Ein neuer Key darf nie in die öffentlichen Quellcodedateien eingetragen werden.
+Direkter Datenbankzugriff für `anon` und `authenticated` ist gesperrt. Beide Tabellen haben aktiviertes RLS und explizite Ablehnungsregeln. Die öffentliche Edge Function validiert Änderungen und schreibt ausschließlich den Teamflow-Workspace mit atomarem Compare-and-Swap über die Revisionsnummer. Die frühere Teamlink-Prüfung ist bewusst entfernt; die bestehende Key-Tabelle wird nicht mehr verwendet.
 
 ## KI und Video
 

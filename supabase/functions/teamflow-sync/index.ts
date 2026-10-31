@@ -9,9 +9,7 @@ Deno.serve(async(req:Request)=>{
  if(origin&&!allowed.has(origin))return respond({error:'Origin not allowed'},403);
  if(req.method==='OPTIONS')return new Response(null,{status:204,headers});if(!['GET','POST'].includes(req.method))return respond({error:'Method not allowed'},405);
  try{
-  const key=req.headers.get('x-teamflow-key')||'';if(!/^[A-Za-z0-9_-]{43}$/.test(key))return respond({error:'Teamzugang erforderlich.'},401);
-  const hash=[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(key)))].map(x=>x.toString(16).padStart(2,'0')).join('');
-  const access=await db(`teamflow_access_keys?key_hash=eq.${hash}&enabled=eq.true&select=workspace_id&limit=1`);if(!access?.length)return respond({error:'Teamlink ist ungültig oder wurde widerrufen.'},401);
+  // Public shared workspace: direct access requested by the owner. Tables remain private.
   const read=async()=>{const rows=await db('teamflow_workspace?id=eq.teamflow&select=revision,data,updated_at');if(!rows?.length)throw Error('Missing workspace');return rows[0] as Snapshot};
   if(req.method==='GET')return respond(await read());
   if(Number(req.headers.get('content-length')||0)>1000000)return respond({error:'Änderung ist zu groß.'},413);
