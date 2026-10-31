@@ -23,6 +23,14 @@ jobs:
       - name: Prepare GitHub Pages version
         run: |
           rm -rf src/app/api
+          python3 - <<'PY'
+          import os,json
+          from pathlib import Path
+          version=os.environ['GITHUB_SHA']
+          Path('public/version.json').write_text(json.dumps({'version':version}))
+          p=Path('public/sw.js')
+          p.write_text(p.read_text().replace('__TEAMFLOW_VERSION__',version))
+          PY
           cat > next.config.ts <<'CONFIG'
           import type { NextConfig } from 'next';
           const config: NextConfig = { output: 'export', basePath: '/teamflow', images: { unoptimized: true } };
@@ -37,6 +45,8 @@ jobs:
           p.write_text(s)
           PY
       - run: npm run build
+        env:
+          NEXT_PUBLIC_TEAMFLOW_VERSION: ${{ github.sha }}
       - uses: actions/configure-pages@v5
         with:
           enablement: true

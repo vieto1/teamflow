@@ -1,0 +1,17 @@
+{
+  "id": "/teamflow/",
+  "name": "Teamflow",
+  "short_name": "Teamflow",
+  "description": "Meetings, Aufgaben und Dateien für euer Team.",
+  "lang": "de-DE",
+  "start_url": "/teamflow/?source=app",
+  "scope": "/teamflow/",
+  "display": "standalone",
+  "background_color": "#080f17",
+  "theme_color": "#080f17",
+  "icons": [
+    {"src": "/teamflow/app-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+    {"src": "/teamflow/app-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
+    {"src": "/teamflow/app-icon-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ]
+}

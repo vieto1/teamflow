@@ -202,3 +202,66 @@ body{background:radial-gradient(ellipse at 1% 8%,#5f9abb22,transparent 37%),radi
 @media(max-width:1100px){.current-tasks-layout{grid-template-columns:1fr;gap:25px}.current-task-list{border-left:0;border-top:1px solid var(--separator);padding:23px 0 0}}
 @media(max-width:650px){.current-tasks-panel{padding:19px!important}.current-tasks-heading{align-items:flex-start;flex-direction:column;gap:10px}.current-tasks-heading h2{font-size:21px!important}.current-tasks-total strong{font-size:35px}.current-task-legend{gap:5px}.current-task-legend>button{flex-wrap:wrap;padding:9px 7px}.current-task-legend>button>b{font-size:13px}.current-task-item-top{flex-wrap:wrap;gap:6px}.current-task-item-top>b{flex-basis:100%}.current-task-status{padding-top:0}.current-member-title{gap:8px}}
 @media(prefers-reduced-motion:reduce){.current-tasks-panel button{transition:none;transform:none!important}}
+
+/* Installable app and deliberate updates. */
+.pwa-install-trigger{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:44px;padding:0 13px;border:1px solid var(--edge);border-radius:12px;background:var(--field);color:var(--text-soft);font-size:12px;white-space:nowrap}
+.pwa-install-trigger>span{font-size:18px;color:#8bb7ff}
+.installed-web-app .pwa-install-trigger{display:none}
+.pwa-install-dialog{box-sizing:border-box;width:min(450px,calc(100% - 32px));max-height:calc(100dvh - 48px);overflow:auto;padding:32px;border:1px solid var(--edge);border-radius:25px;background:var(--glass-flat);color:var(--ink);box-shadow:0 24px 100px #0009;margin:auto;font-family:inherit}
+.pwa-install-dialog::backdrop{background:#020a16bb;backdrop-filter:blur(12px)}
+.pwa-install-dialog>img{display:block;border-radius:18px;margin-bottom:22px}
+.pwa-dialog-close{position:absolute;right:15px;top:12px;width:44px;height:44px;border:0;border-radius:12px;background:transparent;color:var(--text-soft);font-size:26px}
+.pwa-eyebrow{font-size:9px;color:var(--text-quiet);letter-spacing:1.8px}
+.pwa-install-dialog h2{font-size:27px;line-height:1.2;font-weight:500;letter-spacing:-.8px;margin:12px 0}
+.pwa-install-dialog p,.pwa-install-dialog li{font-size:13px;color:var(--text-soft);line-height:1.8}
+.pwa-install-dialog ol{padding-left:21px;margin:22px 0}
+.pwa-install-dialog li{padding-left:7px;margin-bottom:13px}
+.pwa-install-info{padding:17px;border:1px solid var(--edge);border-radius:13px;display:grid;gap:10px;margin:20px 0}
+.pwa-install-info>b{font-size:12px;font-weight:500}
+.pwa-install-info>span{font-size:11px;color:var(--text-quiet);line-height:1.8}
+.pwa-status-banner{position:fixed;z-index:30;bottom:24px;right:24px;left:auto;max-width:440px;display:flex;align-items:center;gap:15px;padding:17px 19px;border:1px solid var(--edge);border-radius:17px;background:var(--glass-flat);box-shadow:0 10px 40px #0005;color:var(--ink)}
+.pwa-status-banner b{display:block;font-size:12px;font-weight:500}
+.pwa-status-banner span{display:block;font-size:11px;line-height:1.7;color:var(--text-quiet);margin-top:5px}
+.pwa-status-banner button{flex-shrink:0;min-height:44px;padding:9px 12px;border:1px solid #8bb7ff55;background:#5c9bff18;border-radius:10px;color:var(--ink);font-size:11px}
+.pwa-install-trigger:focus-visible,.pwa-install-dialog button:focus-visible,.pwa-status-banner button:focus-visible{outline:2px solid #8bb7ff;outline-offset:4px}
+@media(display-mode:standalone){.pwa-install-trigger{display:none}}
+@media(max-width:790px){
+ html{scroll-padding-bottom:calc(100px + env(safe-area-inset-bottom))}
+ body{min-height:100dvh;-webkit-text-size-adjust:100%}
+ .app-shell:before{display:none}
+ .app-shell>.sidebar{position:fixed;inset:auto max(10px,env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) max(10px,env(safe-area-inset-left));width:auto;min-width:0;height:69px;padding:6px;border-radius:22px;z-index:20;background:var(--glass-flat);box-shadow:inset 0 1px #ffffff15,0 10px 35px #0004}
+ .sidebar>.brand,.sidebar>.workspace-label,.sidebar>.sidebar-bottom{display:none}
+ .app-shell>.sidebar nav{display:flex;flex-direction:row;align-items:stretch;justify-content:space-between;gap:2px;width:100%;height:100%}
+ .sidebar nav .nav-item{flex:1 1 0;min-width:0;max-width:none;width:auto;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:4px 2px;font-size:0;border-radius:15px}
+ .sidebar nav .nav-icon{flex:0 0 23px;width:23px;height:23px;font-size:20px;line-height:23px}
+ .sidebar nav .nav-icon svg{width:22px;height:22px}
+ .sidebar nav .nav-item::after{content:attr(aria-label);display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:8px;line-height:13px}
+ .sidebar nav .nav-item[aria-label="Dateiboard"]::after{content:'Dateien'}
+ .sidebar nav .nav-item[aria-label="Benachrichtigungen"]::after{content:'Infos'}
+ .app-shell>.main-area{margin:0;min-width:0;width:100%;max-width:100%;min-height:100dvh;padding-bottom:calc(98px + env(safe-area-inset-bottom))}
+ .app-shell .main-area>.topbar{margin:calc(14px + env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) 0 max(16px,env(safe-area-inset-left));padding:0;gap:9px;min-height:44px}
+ .app-shell .main-area>.topbar>.global-search{flex:1 1 150px;max-width:none;height:44px}
+ .app-shell .main-area>.topbar>.top-actions{flex:0 0 auto;gap:8px;margin-left:auto}
+ .app-shell .main-area>.topbar .theme-switch{height:44px}
+ .app-shell .main-area>.page-content{padding:20px max(16px,env(safe-area-inset-right)) 22px max(16px,env(safe-area-inset-left))}
+ .pwa-install-trigger{min-width:53px;padding:0 10px;font-size:12px;min-height:44px}
+ .topbar .global-search>input{font-size:16px}
+ .page-content :is(input,select,textarea),.modal :is(input,select,textarea),.pwa-install-dialog :is(input,select,textarea){font-size:16px!important}
+ .page-content :is(.primary-button,.secondary-button,.text-button,.video-join,.video-copy,.meeting-week-toolbar>button,.sync-controls>button,.file-toolbar-button){min-height:44px}
+ .pwa-status-banner{left:16px;right:16px;bottom:calc(94px + env(safe-area-inset-bottom));max-width:none;padding:15px}
+ .pwa-install-dialog{padding:27px;max-height:calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 40px)}
+ .overlay:not(.call-overlay){padding:calc(12px + env(safe-area-inset-top)) 12px calc(12px + env(safe-area-inset-bottom))}
+ .call-overlay{padding:0;inset:0;align-items:stretch}
+ .call-overlay .call-modal{width:100%;height:100dvh;max-height:100dvh;border:0;border-radius:0;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+ .call-header{align-items:stretch;flex-direction:column;padding:12px;gap:11px}
+ .call-heading h2{font-size:16px;max-width:calc(100vw - 85px)}
+ .call-heading p{font-size:10px}
+ .call-toolbar{justify-content:space-between;gap:7px}
+ .call-toolbar button,.call-toolbar a{display:flex;align-items:center;justify-content:center;font-size:11px;padding:10px;min-height:44px}
+ .call-stage{flex:1;min-height:0}
+ .call-footer{padding:10px 12px}
+ .call-footer p{font-size:10px}
+ .jitsi-container iframe{width:100%;height:100%}
+}
+@media(max-width:790px) and (max-height:500px){.call-header{flex-direction:row;align-items:center;padding:8px 12px}.call-heading p{display:none}.call-heading h2{max-width:32vw;font-size:13px;margin:0}.call-brand{display:none}.call-footer{display:none}.call-toolbar{justify-content:flex-end}.call-toolbar button,.call-toolbar a{font-size:10px}}
+@media(prefers-reduced-motion:reduce){.pwa-install-dialog,.pwa-status-banner{scroll-behavior:auto}}

@@ -62,3 +62,16 @@ Die OpenAI-Route unter `src/app/api/analyze/route.ts` ist nur für einen Next.js
 Backend-Veröffentlichung: `supabase/functions/teamflow-board/index.ts` mit `deno.json`, `verify_jwt=false` und dem bestehenden Projekt deployen. Nach Backend-Änderungen reale Upload-/Download-/Papierkorbprüfungen ausführen und anschließend Frontend veröffentlichen. `SUPABASE_URL` und `SUPABASE_SERVICE_ROLE_KEY` sind ausschließlich serverseitige Laufzeitvariablen. Keine Schlüssel in den Browser oder das Repository eintragen.
 
 Bewusstes Zugriffsmodell: Jeder mit der Website-Adresse kann alle Kacheln und Dateien lesen, hochladen, bearbeiten und in den wiederherstellbaren Papierkorb verschieben. Die Teammitglied-Zuordnung ist eine organisatorische Beschriftung, keine Identitätsprüfung. CORS ist keine Authentifizierung. Trotz privatem Bucket wären signierte Dateilinks über die öffentliche Board-API für jeden Besucher erhältlich.
+
+
+## iPhone-App (PWA)
+
+Teamflow ist als Home-Screen-Web-App installierbar. In Safari https://vieto1.github.io/teamflow/ öffnen, „Teilen → Zum Home-Bildschirm“ wählen und hinzufügen. Falls angeboten, „Als Web-App öffnen“ aktiviert lassen. Über den „App“-Button in der Kopfzeile gibt es eine Installationshilfe. Es gibt keine App-Store-Veröffentlichung und keine native iOS-Binärdatei.
+
+Manifest und Apple-Metadaten definieren App-Symbol, Startadresse und Standalone-Darstellung. Auf kleinen Bildschirmen steht die Navigation unten; Safe Areas und dynamische Viewport-Höhen berücksichtigen Notch, Home-Indikator und Meetingfenster. Jitsi bleibt in Teamflow eingebettet, mit unterdrückter Weiterleitung zur separaten Jitsi-App. Der externe Raumlink bleibt als Ausweichmöglichkeit erhalten. Ob der Host sich anmelden muss, bestimmt weiterhin der Jitsi-Dienst. Kamera-/Mikrofonfreigabe erfolgt im Meeting. Hintergrundtelefonie oder native CallKit-Funktionen werden nicht bereitgestellt.
+
+Änderungen auf main veröffentlichen weiter automatisch über GitHub Pages. Der Workflow versieht version.json, den Service Worker und das Frontend mit derselben Commit-Version. Die App prüft beim Öffnen, Zurückkehren und alle 60 Sekunden auf neue Versionen. Neue Ansichten werden beim nächsten Online-Start geladen; bei geöffnetem Fenster bietet ein Banner die Aktualisierung an. Es erfolgt kein automatischer Reload während eines Meetings oder einer Eingabe. Offene Eingaben vor manueller Aktualisierung speichern.
+
+Der Service Worker ist auf /teamflow/ begrenzt und speichert nur statische Dateien sowie die Offline-Hinweisseite. Teamdaten, signierte Dateilinks, Uploads, version.json und Jitsi-Anfragen werden nicht gecacht. HTML-Navigation verwendet das Netzwerk mit einer Offline-Hinweisseite als Fallback. Ein vollständiger Offline-Workspace ist nicht implementiert. Lokale Warteschlangen der bestehenden Synchronisierung bleiben erhalten.
+
+E-Mail-/WhatsApp-Versand und Push-Benachrichtigungen werden durch die Installation nicht automatisch aktiviert. Eine Installation auf einem echten iPhone und ein Kamera-/Audiotest erfordern das jeweilige Gerät; Desktop-/Build-Prüfungen ersetzen diesen Gerätetest nicht.
