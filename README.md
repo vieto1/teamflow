@@ -1,5 +1,13 @@
 # Teamflow
 
+## Meeting-Dashboard und Erinnerungen
+
+Übersicht und Agenda enthalten einen interaktiven Wochenkalender mit Tagesfilter, Terminuhrzeiten, Teilnehmenden, Live-/Vergangenheitsstatus und Kalenderexport. Termine werden in Europe/Berlin angezeigt. Der ICS-Export enthält eine Kalendererinnerung 15 Minuten vor dem Termin; sie wird nach Import von der jeweiligen Kalender-App verwaltet.
+
+Der Bereich „Benachrichtigungen“ zeigt den Einrichtungsstand für E-Mail (Resend) und WhatsApp (Twilio). Es sind noch keine Versandkonten verbunden, kein Hintergrundjob aktiv und keine automatischen Nachrichten eingerichtet. Gewünschte Erinnerungszeiten werden ausschließlich lokal auf dem jeweiligen Gerät gespeichert. Sie aktivieren keinen Versand und verändern keine Kalenderdatei.
+
+Für die spätere Aktivierung: verifizierten E-Mail-Absender, WhatsApp-Business-Absender und genehmigte Nachrichtenvorlage einrichten; serverseitige Zugangsdaten und einen geplanten Versandjob ergänzen; Empfänger durch eigenen Bestätigungsprozess anmelden lassen. Empfängeradressen, Handynummern und API-Schlüssel dürfen nicht im öffentlichen Workspace gespeichert werden. Die öffentliche Schreibschnittstelle darf keinen frei adressierbaren Nachrichtenversand auslösen. Eine geschützte Empfängerverwaltung und Abmeldung sind vor Aktivierung erforderlich.
+
 Deutschsprachiges Team-Dashboard mit Agenda, Aufgaben, Statistik und eingebetteten Jitsi-Meetings. Die Website läuft auf GitHub Pages. Meetings und Aufgaben liegen gemeinsam in Supabase (Frankfurt).
 
 ## Nutzung
@@ -41,3 +49,4 @@ Die OpenAI-Route unter `src/app/api/analyze/route.ts` ist nur für einen Next.js
 ## Veröffentlichung
 
 Änderungen auf `main` lösen den Workflow `.github/workflows/pages.yml` aus. Er erstellt den statischen Export unter `/teamflow` und veröffentlicht ihn auf GitHub Pages. Backend-Änderungen müssen zusätzlich als neue Version der Supabase Edge Function veröffentlicht werden.
+
