@@ -99,3 +99,5 @@ body{background:radial-gradient(ellipse at 1% 8%,#5f9abb22,transparent 37%),radi
 :root[data-theme=light] .meeting-dashboard [data-tone=planned]{--meeting-stroke:#3576cc55;--meeting-fill:#448deb12}
 @media(max-width:650px){.meeting-dashboard .meeting-week-graphic>button{padding:12px 2px 10px}.meeting-dashboard .meeting-week-graphic .meeting-day-chart{height:40px}.meeting-color-legend{font-size:10px;gap:10px}.meeting-dashboard .meeting-timeline-item{padding:9px 8px}}
 .meeting-dashboard .meeting-week-toolbar{flex-wrap:wrap}.meeting-dashboard .meeting-jump-next{color:var(--meeting-blue);border-color:#82aeff60;background:#669cff0d}
+
+.overview .meeting-dashboard .panel-heading p{display:block;margin:7px 0 0;font-size:12px;color:var(--text-soft);line-height:1.5}
