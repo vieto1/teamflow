@@ -265,3 +265,60 @@ body{background:radial-gradient(ellipse at 1% 8%,#5f9abb22,transparent 37%),radi
 }
 @media(max-width:790px) and (max-height:500px){.call-header{flex-direction:row;align-items:center;padding:8px 12px}.call-heading p{display:none}.call-heading h2{max-width:32vw;font-size:13px;margin:0}.call-brand{display:none}.call-footer{display:none}.call-toolbar{justify-content:flex-end}.call-toolbar button,.call-toolbar a{font-size:10px}}
 @media(prefers-reduced-motion:reduce){.pwa-install-dialog,.pwa-status-banner{scroll-behavior:auto}}
+
+/* Local meeting AI: explicit review before any shared publication. */
+.ai-local-intro{display:flex;align-items:center;justify-content:space-between;gap:28px;padding:27px!important}
+.ai-local-intro h2{font-size:25px;font-weight:500;letter-spacing:-.7px;line-height:1.25;margin:10px 0}
+.ai-local-intro p{font-size:13px;color:var(--text-soft);line-height:1.8;max-width:640px;margin:0}
+.ai-local-actions{display:flex;flex-direction:column;gap:10px;flex-shrink:0}
+.ai-local-actions a{display:flex;align-items:center;justify-content:center;text-decoration:none;min-height:45px;white-space:nowrap;font-size:12px}
+.ai-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px;margin:20px 0}
+.ai-steps>article{border:1px solid var(--edge);border-radius:16px;padding:20px;background:var(--glass)}
+.ai-steps>article>b{display:grid;place-items:center;width:32px;height:32px;border:1px solid #8bb7ff50;background:#8bb7ff10;color:#8bb7ff;border-radius:10px;font-size:11px}
+.ai-steps h3{font-size:15px;font-weight:500;margin:15px 0 8px}
+.ai-steps p,.ai-local-note{font-size:11px;color:var(--text-quiet);line-height:1.9}
+.ai-local-note{margin:14px 0 22px}
+.ai-import{padding:27px!important}
+.ai-import>.panel-heading{display:flex;justify-content:space-between;align-items:center;gap:18px;flex-wrap:wrap}
+.ai-import .panel-heading h2{font-size:21px;font-weight:500}
+.ai-import .panel-heading p{font-size:12px;color:var(--text-quiet);line-height:1.7}
+.ai-import details{font-size:11px;color:var(--text-quiet);line-height:1.8;margin:15px 0}
+.ai-import summary{cursor:pointer;color:var(--text-soft)}
+.ai-protocol-error,.ai-protocol-notice{padding:13px 16px;border-radius:11px;font-size:12px;line-height:1.7}
+.ai-protocol-error{color:#e6a3a1;border:1px solid #e6a3a150;background:#e6a3a109}
+.ai-protocol-notice{color:#85d5b6;border:1px solid #85d5b650;background:#85d5b609}
+.ai-result-title{display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap;margin:24px 0 18px}
+.ai-result-title h3{font-size:20px;font-weight:500;letter-spacing:-.5px;margin:0}
+.ai-result-title>span{font-size:11px;color:var(--text-quiet)}
+.ai-summary-label,.ai-publish-options>label,.ai-todo-fields>label{display:flex;flex-direction:column;gap:8px;font-size:12px;color:var(--text-soft)}
+.ai-import input:not([type=checkbox]),.ai-import select,.ai-import textarea{min-width:0;width:100%;border:1px solid var(--edge);background:var(--glass-flat);color:var(--ink);font:inherit;font-size:12px;line-height:1.7;padding:10px 12px;border-radius:10px}
+.ai-import textarea{resize:vertical}
+.ai-result-notes{display:grid;grid-template-columns:1fr 1fr;gap:25px;margin:20px 0}
+.ai-result-notes h3,.ai-task-toolbar h3{font-size:15px;font-weight:500;margin:0 0 12px}
+.ai-result-notes ul{padding-left:17px;margin:0;font-size:12px;color:var(--text-soft);line-height:1.9}
+.ai-task-toolbar{display:flex;align-items:center;gap:15px;flex-wrap:wrap;border-top:1px solid var(--separator);padding-top:24px}
+.ai-task-toolbar h3{margin:0 auto 0 0}
+.ai-task-toolbar select{width:auto;min-width:150px}
+.ai-task-toolbar>span{font-size:11px;color:#85d5b6}
+.ai-todo{padding:19px;border:1px solid var(--edge);border-radius:14px;margin:12px 0;background:#8bb7ff06}
+.ai-todo-accepted{border-color:#85d5b666;background:#85d5b606}
+.ai-todo-rejected{opacity:.6}
+.ai-todo-fields{display:grid;grid-template-columns:2fr 1fr 1fr;gap:13px}
+.ai-todo blockquote{font-size:11px;line-height:1.8;color:var(--text-quiet);padding:8px 13px;border-left:2px solid #8bb7ff60;margin:14px 0}
+.ai-todo-actions{display:flex;flex-wrap:wrap;gap:8px}
+.ai-todo-actions>button{font-size:11px;padding:8px 11px;border:1px solid var(--edge);background:var(--field);color:var(--text-soft);border-radius:9px}
+.ai-todo-actions>button[aria-pressed=true]{color:#8bb7ff;border-color:#8bb7ff77;background:#8bb7ff15}
+.ai-publish-options{display:flex;flex-direction:column;gap:15px;border:1px solid #8bb7ff45;border-radius:14px;background:#8bb7ff08;margin:25px 0;padding:20px}
+.ai-publish-options .ai-check{display:flex;flex-direction:row;align-items:flex-start;gap:10px;font-size:11px;line-height:1.8}
+.ai-check>input{flex:0 0 17px;width:17px;height:17px;accent-color:#8bb7ff;margin-top:3px}
+.ai-publish-options>.primary-button{align-self:flex-start;min-height:44px;white-space:normal;text-align:left}
+.ai-publish-options button:disabled{cursor:default;opacity:.5}
+.ai-transcript p{white-space:pre-wrap;max-height:400px;overflow:auto;font-size:12px;line-height:1.9;padding:14px;border:1px solid var(--edge);border-radius:11px}
+.ai-protocol :is(a,button,input,textarea,select,summary):focus-visible{outline:2px solid #8bb7ff;outline-offset:3px}
+.ai-protocol button,.ai-protocol a{transition:background .18s,transform .18s}
+.ai-protocol button:hover,.ai-protocol a:hover{background:var(--blue-pale)}
+.ai-protocol button:active,.ai-protocol a:active{transform:scale(.985)}
+@media(max-width:1050px){.ai-local-intro{align-items:flex-start;flex-direction:column}.ai-local-actions{flex-direction:row;flex-wrap:wrap}.ai-steps{grid-template-columns:1fr}.ai-todo-fields{grid-template-columns:1fr 1fr}.ai-todo-fields>label:first-child{grid-column:1/-1}}
+@media(max-width:650px){.ai-local-intro,.ai-import{padding:20px!important}.ai-local-intro h2{font-size:22px}.ai-local-actions{width:100%;flex-direction:column}.ai-local-actions a{white-space:normal;text-align:center}.ai-result-notes,.ai-todo-fields{grid-template-columns:1fr}.ai-todo-fields>label:first-child{grid-column:auto}.ai-todo{padding:15px}.ai-publish-options{padding:16px}.ai-todo-actions>button{min-height:44px}}
+@media(prefers-reduced-motion:reduce){.ai-protocol button,.ai-protocol a{transition:none;transform:none!important}}
+

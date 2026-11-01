@@ -51,27 +51,19 @@ Die OpenAI-Route unter `src/app/api/analyze/route.ts` ist nur für einen Next.js
 Änderungen auf `main` lösen den Workflow `.github/workflows/pages.yml` aus. Er erstellt den statischen Export unter `/teamflow` und veröffentlicht ihn auf GitHub Pages. Backend-Änderungen müssen zusätzlich als neue Version der Supabase Edge Function veröffentlicht werden.
 
 
-## Dateiboard (ohne Anmeldung)
+## Dateiboard (vorbereitete Erweiterung)
 
 `src/app/file-board.tsx` ergänzt farbige Themen-/Personenkacheln mit Upload, Suche, Personenfilter, Bearbeiten und wiederherstellbarem Papierkorb. 10 MB je Datei, 50 Kacheln, 200 Dateien und 250 MB insgesamt; Papierkorb und laufende Reservierungen zählen zu den Grenzen. Unterstützt werden PDF, JPG/JPEG, PNG, WebP, DOCX, XLSX, PPTX, UTF-8-TXT und CSV. Das Board aktualisiert sichtbare Tabs alle 15 Sekunden und beim Zurückkehren.
 
 `supabase/board.sql` wurde im Projekt angewendet. Es legt private, per RLS gesperrte Metadaten und einen privaten Storage-Bucket an. Nur die Edge Function verwendet den serverseitigen Service-Schlüssel. Downloads erhalten zeitlich begrenzte signierte URLs. Uploadgrößen, Dateiendungen und Dateisignaturen werden geprüft; Quoten werden mit transaktioneller Reservierung durchgesetzt. Es gibt keine permanente Löschfunktion in der Benutzeroberfläche. Die Dateisignaturprüfung ersetzt keinen Virenscanner.
 
-**Zugriffsmodell:** Der Eigentümer hat die Veröffentlichung ohne Anmeldung ausdrücklich freigegeben. Der Endpunkt `teamflow-board` ist aktiv. Alle mit der Website-Adresse können Dateien lesen, hochladen, bearbeiten und in den wiederherstellbaren Papierkorb verschieben.
+**Aktueller Freigabestand:** Die neue Edge Function `teamflow-board` wurde noch nicht veröffentlicht. Die automatische Sicherheitsprüfung hat die Veröffentlichung abgelehnt, weil der ohne Anmeldung erreichbare Endpunkt das Dateiboard öffentlich lesen und verändern würde. Vor Veröffentlichung muss der Eigentümer diesen Zugriff ausdrücklich für Dateien bestätigen oder ein geschützter Zugriff eingerichtet werden. Die vorbereitete Oberfläche darf erst danach in `main` übernommen werden.
 
-Backend-Veröffentlichung: `supabase/functions/teamflow-board/index.ts` mit `deno.json`, `verify_jwt=false` und dem bestehenden Projekt deployen. Nach Backend-Änderungen reale Upload-/Download-/Papierkorbprüfungen ausführen und anschließend Frontend veröffentlichen. `SUPABASE_URL` und `SUPABASE_SERVICE_ROLE_KEY` sind ausschließlich serverseitige Laufzeitvariablen. Keine Schlüssel in den Browser oder das Repository eintragen.
+Nach der Freigabe: `supabase/functions/teamflow-board/index.ts` mit `deno.json`, `verify_jwt=false` und dem bestehenden Projekt deployen; danach reale Upload-/Download-/Papierkorbprüfungen ausführen und erst anschließend Frontend veröffentlichen. `SUPABASE_URL` und `SUPABASE_SERVICE_ROLE_KEY` sind ausschließlich serverseitige Laufzeitvariablen. Keine Schlüssel in den Browser oder das Repository eintragen.
 
-Bewusstes Zugriffsmodell: Jeder mit der Website-Adresse kann alle Kacheln und Dateien lesen, hochladen, bearbeiten und in den wiederherstellbaren Papierkorb verschieben. Die Teammitglied-Zuordnung ist eine organisatorische Beschriftung, keine Identitätsprüfung. CORS ist keine Authentifizierung. Trotz privatem Bucket wären signierte Dateilinks über die öffentliche Board-API für jeden Besucher erhältlich.
+Bewusstes Zugriffsmodell des vorbereiteten Codes: Jeder mit der Website-Adresse kann alle Kacheln und Dateien lesen, hochladen, bearbeiten und in den wiederherstellbaren Papierkorb verschieben. Die Teammitglied-Zuordnung ist eine organisatorische Beschriftung, keine Identitätsprüfung. CORS ist keine Authentifizierung. Trotz privatem Bucket wären signierte Dateilinks über die öffentliche Board-API für jeden Besucher erhältlich.
 
 
-## iPhone-App (PWA)
+## Lokale Meeting-KI für Mac
 
-Teamflow ist als Home-Screen-Web-App installierbar. In Safari https://vieto1.github.io/teamflow/ öffnen, „Teilen → Zum Home-Bildschirm“ wählen und hinzufügen. Falls angeboten, „Als Web-App öffnen“ aktiviert lassen. Über den „App“-Button in der Kopfzeile gibt es eine Installationshilfe. Es gibt keine App-Store-Veröffentlichung und keine native iOS-Binärdatei.
-
-Manifest und Apple-Metadaten definieren App-Symbol, Startadresse und Standalone-Darstellung. Auf kleinen Bildschirmen steht die Navigation unten; Safe Areas und dynamische Viewport-Höhen berücksichtigen Notch, Home-Indikator und Meetingfenster. Jitsi bleibt in Teamflow eingebettet, mit unterdrückter Weiterleitung zur separaten Jitsi-App. Der externe Raumlink bleibt als Ausweichmöglichkeit erhalten. Ob der Host sich anmelden muss, bestimmt weiterhin der Jitsi-Dienst. Kamera-/Mikrofonfreigabe erfolgt im Meeting. Hintergrundtelefonie oder native CallKit-Funktionen werden nicht bereitgestellt.
-
-Änderungen auf main veröffentlichen weiter automatisch über GitHub Pages. Der Workflow versieht version.json, den Service Worker und das Frontend mit derselben Commit-Version. Die App prüft beim Öffnen, Zurückkehren und alle 60 Sekunden auf neue Versionen. Neue Ansichten werden beim nächsten Online-Start geladen; bei geöffnetem Fenster bietet ein Banner die Aktualisierung an. Es erfolgt kein automatischer Reload während eines Meetings oder einer Eingabe. Offene Eingaben vor manueller Aktualisierung speichern.
-
-Der Service Worker ist auf /teamflow/ begrenzt und speichert nur statische Dateien sowie die Offline-Hinweisseite. Teamdaten, signierte Dateilinks, Uploads, version.json und Jitsi-Anfragen werden nicht gecacht. HTML-Navigation verwendet das Netzwerk mit einer Offline-Hinweisseite als Fallback. Ein vollständiger Offline-Workspace ist nicht implementiert. Lokale Warteschlangen der bestehenden Synchronisierung bleiben erhalten.
-
-E-Mail-/WhatsApp-Versand und Push-Benachrichtigungen werden durch die Installation nicht automatisch aktiviert. Eine Installation auf einem echten iPhone und ein Kamera-/Audiotest erfordern das jeweilige Gerät; Desktop-/Build-Prüfungen ersetzen diesen Gerätetest nicht.
+Unter KI-Protokoll gibt es ein Mac-Installationspaket und eine lokale JSON-Prüfansicht. Einrichtung und Grenzen: [mac-companion/README.md](mac-companion/README.md). whisper.cpp und Ollama laufen lokal; nur ausdrücklich bestätigte Ergebnisse gelangen über den bestehenden Sync in den öffentlichen Workspace. Keine Audio-Uploads und kein API-Schlüssel nötig. Dokumentänderungen werden als geprüfte neue TXT-Kopien exportiert. Paket: public/downloads/Teamflow-KI-Mac.zip.
