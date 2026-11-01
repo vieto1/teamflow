@@ -9,7 +9,7 @@ umask 077
 mkdir -p "$STATE_DIR"
 if [ ! -f "$STATE_DIR/config.json" ]; then echo "Bitte zuerst Einrichten.command öffnen."; read -r -p "Enter zum Schließen …"; exit 1; fi
 PYTHON_BIN="$(brew --prefix python@3.12)/bin/python3.12"
-if curl --max-time 2 -fsS -D - -o /dev/null "http://127.0.0.1:8765/" 2>/dev/null | grep -qi 'X-Teamflow-Version: 1.1.0'; then open "http://127.0.0.1:8765/"; exit 0; fi
+if curl --max-time 2 -fsS -D - -o /dev/null "http://127.0.0.1:8765/" 2>/dev/null | grep -qi 'X-Teamflow-Version: 1.2.0'; then open "http://127.0.0.1:8765/"; exit 0; fi
 if curl --max-time 2 -fsS "http://127.0.0.1:8765/" >/dev/null 2>&1; then
  echo "Auf Port 8765 läuft bereits ein anderer oder älterer Dienst. Bitte Stoppen.command und danach Starten.command öffnen."
  read -r -p "Enter zum Schließen …"

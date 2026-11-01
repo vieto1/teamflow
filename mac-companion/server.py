@@ -24,7 +24,7 @@ import wave
 import signal
 
 os.umask(0o077)
-VERSION = '1.1.0'
+VERSION = '1.2.0'
 ROOT = Path(__file__).resolve().parent
 STATE = Path(os.environ.get('TEAMFLOW_STATE', str(Path.home()/'Library/Application Support/Teamflow-KI')))
 PEOPLE = ['Viet', 'Do Hai', 'Can', 'John', 'Nicht zugeordnet']
@@ -319,7 +319,7 @@ class Handler(BaseHTTPRequestHandler):
             if route == '/':
                 html = (ROOT/'web/index.html').read_text().replace('__CSRF__',SESSION)
                 return self.respond(html,mime='text/html; charset=utf-8',cookie=True)
-            if route in ('/app.js','/style.css'):
+            if route in ('/app.js','/meeting-bridge.js','/style.css'):
                 return self.respond((ROOT/'web'/route[1:]).read_bytes(),mime='application/javascript; charset=utf-8' if route.endswith('js') else 'text/css; charset=utf-8')
             if route == '/api/status': return self.respond({'local':True,'version':VERSION,'model':CONFIG.get('model',MODEL),'whisper':bool(shutil.which('whisper-cli') or shutil.which('whisper-cpp')),'ffmpeg':bool(shutil.which('ffmpeg')),'whisperModel':Path(CONFIG.get('whisperModel',str(STATE/'models/ggml-small.bin'))).is_file()})
             if route == '/api/jobs':
