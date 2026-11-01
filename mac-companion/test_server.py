@@ -33,6 +33,16 @@ class Tests(unittest.TestCase):
   self.assertEqual(reviewed['result']['todos'][0]['evidence'],task['evidence'])
   self.assertEqual((df/'text.txt').read_text(),'Alter Termin')
   self.assertEqual((folder/'revisions'/(doc+'.txt')).read_text(),'Neuer Termin')
+ def test_transcript_survives_analysis_failure(self):
+  jid=str(uuid.uuid4());folder=s.job_dir(jid);folder.mkdir()
+  s.JOBS[jid]={'id':jid,'source':'text','title':'Test','date':'2026-11-01','documents':[]}
+  original='Viet: Wir prüfen den Plan.\nJohn: Ich übernehme die Prüfung.'
+  (folder/'input.txt').write_text(original)
+  with patch.object(s,'generate',side_effect=RuntimeError('Model unavailable')): s.process(jid)
+  self.assertEqual(s.JOBS[jid]['status'],'failed')
+  self.assertTrue(s.JOBS[jid]['transcriptReady'])
+  source=json.loads((folder/'transcript-source.json').read_text())
+  self.assertEqual(source['transcript'],original)
  def test_browser_audio_without_duration(self):
   import shutil, subprocess
   ffmpeg,probe=shutil.which('ffmpeg'),shutil.which('ffprobe')

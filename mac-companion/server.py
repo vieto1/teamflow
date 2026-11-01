@@ -24,7 +24,7 @@ import wave
 import signal
 
 os.umask(0o077)
-VERSION = '1.0.2'
+VERSION = '1.1.0'
 ROOT = Path(__file__).resolve().parent
 STATE = Path(os.environ.get('TEAMFLOW_STATE', str(Path.home()/'Library/Application Support/Teamflow-KI')))
 PEOPLE = ['Viet', 'Do Hai', 'Can', 'John', 'Nicht zugeordnet']
@@ -238,6 +238,8 @@ def process(job_id):
             if not transcript.is_file(): raise ValueError('Die Aufnahme konnte nicht transkribiert werden. Bitte Dateiformat und Ton prüfen.')
             segments = read_segments(json.loads(transcript.read_text(encoding='utf-8')))
             if sum(len(s['text']) for s in segments) > 500000: raise ValueError('Das Transkript ist zu lang. Bitte Aufnahme teilen.')
+        atomic_json(folder/'transcript-source.json', {'id':job_id,'meeting':{'title':job['title'],'date':job['date']},'segments':segments,'transcript':'\n'.join((f"[{s['time']}] " if s['time'] else '')+s['text'] for s in segments)})
+        update(job_id,transcriptReady=True)
         result = extract(segments, job['title'], job['date'], stage)
         docs = []
         for doc_id in job.get('documents', []):
@@ -327,6 +329,7 @@ class Handler(BaseHTTPRequestHandler):
             parts = route.strip('/').split('/')
             if len(parts)>=4 and parts[:2]==['api','jobs']:
                 folder = job_dir(parts[2])
+                if parts[3]=='transcript': return self.respond(json.loads((folder/'transcript-source.json').read_text()))
                 if parts[3]=='result': return self.respond(json.loads((folder/'result.json').read_text()))
                 if parts[3]=='export': return self.respond((folder/'review.json').read_bytes(),mime='application/json; charset=utf-8',filename='Teamflow-Protokoll.json')
                 if len(parts)==5 and parts[3]=='revision': return self.respond((folder/'revisions'/(identifier(parts[4])+'.txt')).read_bytes(),mime='text/plain; charset=utf-8',filename='Teamflow-Aenderungsfassung.txt')

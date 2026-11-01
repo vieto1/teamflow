@@ -8,7 +8,7 @@ if [ "$SOURCE_DIR" = "$APP_DIR" ]; then echo "Bitte Aktualisieren.command aus de
 if [ ! -f "$HOME/Library/Application Support/Teamflow-KI/config.json" ]; then echo "Bitte zuerst Einrichten.command öffnen."; read -r -p "Enter …"; exit 1; fi
 PYTHON_BIN="$(brew --prefix python@3.12)/bin/python3.12"
 "$PYTHON_BIN" -m py_compile "$SOURCE_DIR/server.py"
-echo "Update auf Teamflow KI 1.0.2. Laufende Analysen werden unterbrochen; gespeicherte Aufnahmen bleiben erhalten."
+echo "Update auf Teamflow KI 1.1.0. Laufende Analysen werden unterbrochen; gespeicherte Aufnahmen bleiben erhalten."
 bash "$SOURCE_DIR/Stoppen.command"
 cp "$APP_DIR/server.py" "$APP_DIR/server.py.previous"
 cp "$SOURCE_DIR/server.py" "$APP_DIR/server.py"

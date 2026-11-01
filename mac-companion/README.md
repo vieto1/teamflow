@@ -33,3 +33,13 @@ Browseraufnahmen ohne Dauerangabe (N/A) werden nach einer zeitlich begrenzten Um
 ## Version 1.0.2: Prozess-Neustart
 
 Für eine bestehende Installation Aktualisieren.command aus dem neu entpackten Download öffnen. Es prüft den Python-Dienst auf Port 8765 anhand von Arbeitsordner und Prozessbefehl, beendet nur den eindeutig identifizierten Teamflow-Dienst und kopiert die korrigierten Programmdateien. Modelle und private Daten werden nicht verändert. Laufende Analysen werden unterbrochen und können anschließend erneut gestartet werden. Fremde Dienste werden nicht beendet. Die Oberfläche und der HTTP-Header zeigen jetzt die aktive Version. Starten.command verwaltet den Python-Prozess direkt und verwendet alte Dienste nicht mehr stillschweigend weiter.
+
+## Version 1.1.0: Transkript zuerst
+
+Das Ergebnis zeigt drei getrennte Spalten: vollständiges Transkript, bearbeitbare Zusammenfassung und gefilterte Aufgabenvorschläge. Auf schmalen Bildschirmen stehen sie untereinander. Das Transkript kann als Fließtext oder in Zeitabschnitten gelesen und separat als TXT heruntergeladen werden. Zeitabschnitte sind keine erkannten Sprecherwechsel. Namen lassen sich manuell nach dem Anhören zuordnen; diese Beschriftungen bleiben in diesem Browser und fließen nur in den TXT-Export der Abschnittsansicht ein. Es gibt keine automatische Diarisierung oder verifizierte Sprecheridentität. Automatische Spracherkennung garantiert keine fehlerfreie wortgetreue Wiedergabe.
+
+Das Originaltranskript wird vor der Zusammenfassung auf dem Mac gespeichert und bleibt auch bei einem anschließenden KI-Fehler abrufbar. Die ursprüngliche Aufnahme bleibt erhalten.
+
+Auf Wunsch der bereits einverstandenen Gruppe ist die Gruppenfreigabe standardmäßig aktiv. Sie und die automatische Auswertung nach dem Aufnahmestopp sind unter Aufnahmeeinstellungen abschaltbar; Auswahl bleibt in diesem Browser gespeichert. Mikrofon-/Tab-Audio-Freigaben des Browsers bleiben erforderlich. Nach dem Start wird ausschließlich eine tatsächlich laufende lokale Aufnahme angezeigt. Nach dem Stopp startet die Verarbeitung automatisch, wenn die Einstellung aktiv ist.
+
+Noch nicht enthalten: automatischer Mitschnitt beim Start eines eingebetteten Jitsi-Meetings, automatische Erkennung des letzten Teilnehmers, automatische Übertragung der Jitsi-Aufnahme an den Mac oder Freigabe des Mac-Dienstes für andere Geräte. Es besteht bisher keine Audioverbindung zwischen Jitsi-IFrame und lokalem Dienst. Hierfür ist eine gesonderte Recorder-Anbindung erforderlich. Eine Browser-Tab-Aufnahme kann die erneute Freigabe des Betriebssystems/Browsers nicht umgehen.
