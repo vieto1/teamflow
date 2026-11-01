@@ -25,7 +25,7 @@ brew install python@3.12 ffmpeg whisper.cpp ollama poppler
 PYTHON_BIN="$(brew --prefix python@3.12)/bin/python3.12"
 mkdir -p "$STATE_DIR/models" "$APP_DIR"
 if [ "$SOURCE_DIR" != "$APP_DIR" ]; then cp -R "$SOURCE_DIR/." "$APP_DIR/"; fi
-chmod +x "$APP_DIR/Starten.command" "$APP_DIR/Einrichten.command"
+chmod +x "$APP_DIR/Starten.command" "$APP_DIR/Einrichten.command" "$APP_DIR/Stoppen.command"
 MEMORY_BYTES=$(sysctl -n hw.memsize)
 AI_MODEL="qwen2.5:3b"
 WHISPER_KIND="base"

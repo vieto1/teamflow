@@ -21,8 +21,10 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import xml.etree.ElementTree as ET
 import zipfile
 import wave
+import signal
 
 os.umask(0o077)
+VERSION = '1.0.2'
 ROOT = Path(__file__).resolve().parent
 STATE = Path(os.environ.get('TEAMFLOW_STATE', str(Path.home()/'Library/Application Support/Teamflow-KI')))
 PEOPLE = ['Viet', 'Do Hai', 'Can', 'John', 'Nicht zugeordnet']
@@ -303,7 +305,7 @@ class Handler(BaseHTTPRequestHandler):
     def respond(self, data, status=200, mime='application/json; charset=utf-8', filename=None, cookie=False):
         content = data if isinstance(data,bytes) else json.dumps(data,ensure_ascii=False).encode() if mime.startswith('application/json') else data.encode()
         self.send_response(status); self.send_header('Content-Type',mime); self.send_header('Content-Length',str(len(content)))
-        self.send_header('Cache-Control','no-store'); self.send_header('X-Content-Type-Options','nosniff'); self.send_header('X-Frame-Options','DENY')
+        self.send_header('X-Teamflow-Version',VERSION); self.send_header('Cache-Control','no-store'); self.send_header('X-Content-Type-Options','nosniff'); self.send_header('X-Frame-Options','DENY')
         self.send_header('Content-Security-Policy',"default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; media-src 'self' blob:; img-src 'self' data:; object-src 'none'; frame-ancestors 'none'")
         if cookie: self.send_header('Set-Cookie',f'teamflow_session={SESSION}; HttpOnly; SameSite=Strict; Path=/')
         if filename: self.send_header('Content-Disposition',f'attachment; filename="{filename}"')
@@ -317,7 +319,7 @@ class Handler(BaseHTTPRequestHandler):
                 return self.respond(html,mime='text/html; charset=utf-8',cookie=True)
             if route in ('/app.js','/style.css'):
                 return self.respond((ROOT/'web'/route[1:]).read_bytes(),mime='application/javascript; charset=utf-8' if route.endswith('js') else 'text/css; charset=utf-8')
-            if route == '/api/status': return self.respond({'local':True,'model':CONFIG.get('model',MODEL),'whisper':bool(shutil.which('whisper-cli') or shutil.which('whisper-cpp')),'ffmpeg':bool(shutil.which('ffmpeg')),'whisperModel':Path(CONFIG.get('whisperModel',str(STATE/'models/ggml-small.bin'))).is_file()})
+            if route == '/api/status': return self.respond({'local':True,'version':VERSION,'model':CONFIG.get('model',MODEL),'whisper':bool(shutil.which('whisper-cli') or shutil.which('whisper-cpp')),'ffmpeg':bool(shutil.which('ffmpeg')),'whisperModel':Path(CONFIG.get('whisperModel',str(STATE/'models/ggml-small.bin'))).is_file()})
             if route == '/api/jobs':
                 with LOCK: rows = sorted(JOBS.values(),key=lambda j:j['createdAt'],reverse=True)
                 return self.respond(rows)
@@ -431,6 +433,7 @@ def initialize():
         except (ValueError,KeyError): pass
 
 if __name__=='__main__':
+    signal.signal(signal.SIGTERM, lambda *_: (_ for _ in ()).throw(KeyboardInterrupt()))
     initialize()
     threading.Thread(target=worker,daemon=True).start()
     server=ThreadingHTTPServer(('127.0.0.1',8765),Handler); server.daemon_threads=True

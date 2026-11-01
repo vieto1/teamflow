@@ -29,3 +29,7 @@ Python-Tests prüfen Quellenvalidierung, Fristen, Export, unveränderte Original
 ## Fehlerbehebung Version 1.0.1
 
 Browseraufnahmen ohne Dauerangabe (N/A) werden nach einer zeitlich begrenzten Umwandlung anhand ihrer tatsächlichen PCM-Länge geprüft. Bei einer älteren Installation Dienst mit Ctrl+C beenden, das aktuelle Paket entpacken und Einrichten.command erneut ausführen. Lokale Daten und vorhandene Modelle bleiben erhalten. Anschließend beim fehlgeschlagenen Job Erneut auswerten wählen.
+
+## Version 1.0.2: Prozess-Neustart
+
+Für eine bestehende Installation Aktualisieren.command aus dem neu entpackten Download öffnen. Es prüft den Python-Dienst auf Port 8765 anhand von Arbeitsordner und Prozessbefehl, beendet nur den eindeutig identifizierten Teamflow-Dienst und kopiert die korrigierten Programmdateien. Modelle und private Daten werden nicht verändert. Laufende Analysen werden unterbrochen und können anschließend erneut gestartet werden. Fremde Dienste werden nicht beendet. Die Oberfläche und der HTTP-Header zeigen jetzt die aktive Version. Starten.command verwaltet den Python-Prozess direkt und verwendet alte Dienste nicht mehr stillschweigend weiter.
