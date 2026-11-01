@@ -20,6 +20,7 @@ import uuid
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import xml.etree.ElementTree as ET
 import zipfile
+import wave
 
 os.umask(0o077)
 ROOT = Path(__file__).resolve().parent
@@ -199,6 +200,21 @@ def document_changes(result, documents, stage):
                     if not any(r['documentId']==row['documentId'] and r['before']==before for r in revisions): revisions.append(row)
     return revisions[:100]
 
+def prepare_audio(ffmpeg, media, output):
+    # Browser recordings may have no container duration (ffprobe reports N/A).
+    # Decode at most six hours plus one second, then measure the actual PCM frames.
+    try:
+        run_command([ffmpeg,'-nostdin','-v','error','-y','-protocol_whitelist','file,pipe',
+            '-i',str(media),'-vn','-t','21601','-ar','16000','-ac','1','-c:a','pcm_s16le',str(output)])
+        with wave.open(str(output),'rb') as audio:
+            seconds = audio.getnframes()/audio.getframerate()
+        if not 0 < seconds <= 21600:
+            raise ValueError('Bitte eine hörbare Aufnahme von höchstens 6 Stunden verwenden.')
+        return seconds
+    except Exception:
+        output.unlink(missing_ok=True)
+        raise
+
 def process(job_id):
     folder = job_dir(job_id)
     try:
@@ -213,9 +229,7 @@ def process(job_id):
             ffmpeg, probe = shutil.which('ffmpeg'), shutil.which('ffprobe')
             if not ffmpeg or not probe: raise ValueError('FFmpeg fehlt. Bitte Einrichten.command ausführen.')
             media = folder/'input.audio'
-            seconds = float(run_command([probe,'-v','error','-protocol_whitelist','file,pipe','-show_entries','format=duration','-of','default=noprint_wrappers=1:nokey=1',str(media)],120).decode().strip())
-            if not 0 < seconds <= 21600: raise ValueError('Bitte eine Aufnahme von höchstens 6 Stunden verwenden.')
-            run_command([ffmpeg,'-nostdin','-v','error','-y','-protocol_whitelist','file,pipe','-i',str(media),'-vn','-ar','16000','-ac','1','-c:a','pcm_s16le',str(folder/'audio.wav')])
+            prepare_audio(ffmpeg, media, folder/'audio.wav')
             stage('Gespräch lokal transkribieren – das kann je nach Länge einige Zeit dauern')
             run_command([binary,'-m',str(model),'-f',str(folder/'audio.wav'),'-l','de','-oj','-of',str(folder/'transcript')])
             transcript = folder/'transcript.json'

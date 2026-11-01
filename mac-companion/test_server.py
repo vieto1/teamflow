@@ -33,6 +33,31 @@ class Tests(unittest.TestCase):
   self.assertEqual(reviewed['result']['todos'][0]['evidence'],task['evidence'])
   self.assertEqual((df/'text.txt').read_text(),'Alter Termin')
   self.assertEqual((folder/'revisions'/(doc+'.txt')).read_text(),'Neuer Termin')
+ def test_browser_audio_without_duration(self):
+  import shutil, subprocess
+  ffmpeg,probe=shutil.which('ffmpeg'),shutil.which('ffprobe')
+  if not ffmpeg or not probe: self.skipTest('FFmpeg required')
+  media=s.STATE/'browser.webm'; output=s.STATE/'decoded.wav'
+  # Non-seekable output reproduces MediaRecorder WebM without duration metadata.
+  result=subprocess.run([ffmpeg,'-v','error','-f','lavfi','-i','sine=frequency=440:duration=0.6','-c:a','libopus','-f','webm','pipe:1'],capture_output=True,check=True)
+  media.write_bytes(result.stdout)
+  duration=subprocess.check_output([probe,'-v','error','-show_entries','format=duration','-of','default=noprint_wrappers=1:nokey=1',str(media)]).decode().strip()
+  self.assertEqual(duration,'N/A')
+  self.assertAlmostEqual(s.prepare_audio(ffmpeg,media,output),0.6,delta=0.05)
+  self.assertTrue(output.exists())
+  media.write_bytes(b'not audio')
+  with self.assertRaises(RuntimeError): s.prepare_audio(ffmpeg,media,output)
+  self.assertFalse(output.exists())
+ def test_audio_limit_and_cleanup(self):
+  import wave
+  output=s.STATE/'overlong.wav'
+  def fake_decode(args):
+   self.assertIn('21601',args)
+   with wave.open(str(output),'wb') as w:
+    w.setnchannels(1); w.setsampwidth(1); w.setframerate(1); w.writeframes(b'x'*21601)
+  with patch.object(s,'run_command',side_effect=fake_decode):
+   with self.assertRaises(ValueError): s.prepare_audio('ffmpeg',s.STATE/'input',output)
+  self.assertFalse(output.exists())
  def test_http_boundary_and_export(self):
   srv=s.ThreadingHTTPServer(('127.0.0.1',0),s.Handler); threading.Thread(target=srv.serve_forever,daemon=True).start()
   def request(path,headers=None,method='GET',body=None):

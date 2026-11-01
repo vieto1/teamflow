@@ -25,3 +25,7 @@ Für Updates die neue ZIP herunterladen, entpacken und `Einrichten.command` erne
 
 ## Prüfstand
 Python-Tests prüfen Quellenvalidierung, Fristen, Export, unveränderte Originaldokumente und lokale HTTP-Zugriffssperren. Build und Syntax werden geprüft. Die Modellverarbeitung wurde in der Entwicklungsumgebung mit simulierten KI-Antworten geprüft. Ein echter macOS-Installationslauf und echte Whisper-/Ollama-Inferenz müssen auf dem Zielgerät getestet werden; Qualität und Geschwindigkeit hängen vom Mac, Modell und Ton ab.
+
+## Fehlerbehebung Version 1.0.1
+
+Browseraufnahmen ohne Dauerangabe (N/A) werden nach einer zeitlich begrenzten Umwandlung anhand ihrer tatsächlichen PCM-Länge geprüft. Bei einer älteren Installation Dienst mit Ctrl+C beenden, das aktuelle Paket entpacken und Einrichten.command erneut ausführen. Lokale Daten und vorhandene Modelle bleiben erhalten. Anschließend beim fehlgeschlagenen Job Erneut auswerten wählen.
