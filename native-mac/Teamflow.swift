@@ -96,10 +96,16 @@ final class AudioRecorder: NSObject, SCStreamOutput, SCStreamDelegate {
     var captureStartedAt = 0.0
     var cancelRequested = false
     var busy = false; var recording = false; var meeting: [String: Any] = [:]
-    var csrf = ""; var safetyTimer: Timer?; var leaseTimer: Timer?
+    var csrf = ""; var safetyTimer: Timer?; var activity: NSObjectProtocol?
     let session: URLSession = { let c = URLSessionConfiguration.default; c.timeoutIntervalForRequest = 30; return URLSession(configuration: c) }()
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.regular)
+        let mainMenu = NSMenu()
+        let appMenu = NSMenu(); let appMenuItem = NSMenuItem(); appMenuItem.submenu = appMenu; mainMenu.addItem(appMenuItem)
+        appMenu.addItem(withTitle: "Teamflow beenden", action: #selector(quit), keyEquivalent: "q").target = self
+        let edit = NSMenu(title: "Bearbeiten"); let editItem = NSMenuItem(title: "Bearbeiten", action: nil, keyEquivalent: ""); editItem.submenu = edit; mainMenu.addItem(editItem)
+        for (title, selector, key) in [("Widerrufen", "undo:", "z"), ("Ausschneiden", "cut:", "x"), ("Kopieren", "copy:", "c"), ("Einsetzen", "paste:", "v"), ("Alles auswählen", "selectAll:", "a")] { edit.addItem(withTitle: title, action: NSSelectorFromString(selector), keyEquivalent: key) }
+        NSApp.mainMenu = mainMenu
         let menu = NSMenu()
         menu.addItem(withTitle: "Teamflow öffnen", action: #selector(show), keyEquivalent: "o").target = self
         menu.addItem(withTitle: "Aufnahme stoppen", action: #selector(stopFromMenu), keyEquivalent: "s").target = self
@@ -183,19 +189,20 @@ final class AudioRecorder: NSObject, SCStreamOutput, SCStreamDelegate {
               let html = String(data:data,encoding:.utf8), let range = html.range(of:"name=\"csrf\" content=\""), let end = html[range.upperBound...].firstIndex(of:"\"") else { throw failure("Lokaler Teamflow-Dienst ist nicht erreichbar oder Port 8765 ist belegt.") }
         csrf = String(html[range.upperBound..<end])
     }
+    func endActivity() { if let activity { ProcessInfo.processInfo.endActivity(activity) }; activity = nil }
     func start() async {
-        cancelRequested = false; pendingResult = nil; busy = true; emit(["type":"progress","stage":"Mac-Aufnahme wird vorbereitet …"])
+        cancelRequested = false; pendingResult = nil; busy = true; activity = ProcessInfo.processInfo.beginActivity(options: [.userInitiated, .idleSystemSleepDisabled], reason: "Teamflow-Aufnahme und lokale Transkription"); emit(["type":"progress","stage":"Mac-Aufnahme wird vorbereitet …"])
         do {
             try await ensureServer()
             let capture = AudioRecorder(); audio = capture; capture.setMuted(true)
             capture.onFailure = { [weak self] message in Task { @MainActor in self?.emit(["type":"warning","stage":"Audio-Unterbrechung: "+message]); await self?.stop() } }
-            try await capture.start(); if cancelRequested { _ = try? await capture.stop(); audio = nil; busy = false; emit(["type":"error","error":"Aufnahmestart wurde abgebrochen."]); return }; recording = true; item.button?.title = "● REC"
+            try await capture.start(); if cancelRequested { _ = try? await capture.stop(); audio = nil; busy = false; endActivity(); emit(["type":"error","error":"Aufnahmestart wurde abgebrochen."]); return }; recording = true; item.button?.title = "● REC"
             captureStartedAt = Date().timeIntervalSince1970*1000; emit(["type":"started","startedAt":captureStartedAt])
             safetyTimer = Timer.scheduledTimer(withTimeInterval:21600,repeats:false) { [weak self] _ in Task { @MainActor in await self?.stop() } }
-        } catch { audio = nil; busy = false; emit(["type":"error","error":error.localizedDescription]) }
+        } catch { audio = nil; busy = false; endActivity(); emit(["type":"error","error":error.localizedDescription]) }
     }
     func stop() async {
-        guard recording, let capture = audio else { if busy { cancelRequested = true }; return }; recording = false; safetyTimer?.invalidate(); leaseTimer?.invalidate(); item.button?.title = "TF · KI"
+        guard recording, let capture = audio else { if busy { cancelRequested = true }; return }; recording = false; safetyTimer?.invalidate(); item.button?.title = "TF · KI"
         emit(["type":"processing","stage":"Aufnahme wird gespeichert und lokal transkribiert …"])
         do {
             let (source,dropped) = try await capture.stop(); audio = nil
@@ -229,7 +236,7 @@ final class AudioRecorder: NSObject, SCStreamOutput, SCStreamDelegate {
                 }
             }
         } catch { audio = nil; emit(["type":"error","error":error.localizedDescription+" Aufnahmen und vorhandene Ergebnisse bleiben auf dem Mac gespeichert."]) }
-        busy = false; item.button?.title = "TF"
+        busy = false; endActivity(); item.button?.title = "TF"
     }
 }
 @main struct Main {

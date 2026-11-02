@@ -10,6 +10,8 @@ Im Meeting Aufnahme starten drücken. Erst nach erfolgreichem Capture-Start ersc
 
 Nach dem Stoppen wird das Audio lokal zusammengeführt und an den vorhandenen geschützten Loopback-Dienst übergeben. Die App startet Python und Ollama bei Bedarf, ohne Terminalfenster. Originale liegen privat unter ~/Library/Application Support/Teamflow-KI/native-recordings/. Sie enthalten zwei Tonspuren in einer MOV-Datei (nur Audio). Die zusammengeführte M4A und bestehende Jobdaten bleiben ebenfalls lokal. Die App gibt fertige Ergebnisse an KI-Protokoll zurück; veröffentlichte Protokolle und angenommene Aufgaben werden wie bisher erst nach ausdrücklicher Freigabe gemeinsam gespeichert. Nach Seitenneuladen kann das letzte Ergebnis während derselben App-Sitzung erneut angezeigt werden. Langfristige Ergebnisse liegen weiterhin im lokalen Dienst und im bewusst freigegebenen gemeinsamen Workspace.
 
+Der Mac bleibt eingeschaltet; den Deckel während der Aufnahme offen lassen. Die App verhindert normalen automatischen Ruhezustand während Aufnahme und Auswertung.
+
 Das TF-Menü bietet Aufnahme stoppen, Fenster öffnen und Beenden. Beenden während einer laufenden Verarbeitung wird verhindert; ein erzwungenes Beenden über macOS kann laufende Aufnahmen verlieren. Autostart ausschalten.command entfernt nur den Autostart-Eintrag, keine App oder Aufnahmen. Der Autostart wird beim nächsten Anmelden aktiv. Die App zeichnet niemals durch den Autostart auf.
 
 Die Jitsi-Host-Anmeldung bleibt eine Vorgabe des verwendeten Dienstes. Die App öffnet Anmeldefenster als eigene Fenster. Manche Login-Anbieter beschränken eingebettete Browser; gegebenenfalls GitHub-Anmeldung verwenden. Die Erreichbarkeit des öffentlichen Jitsi-Dienstes und dessen Regeln sind nicht Teil der lokalen KI.
