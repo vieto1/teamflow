@@ -239,3 +239,9 @@ body::after { content:''; position:fixed; inset:0; z-index:-1; pointer-events:no
 .app-shell .file-tile[data-color="amber"] { --tile-tone:#e5ba78; }
 .app-shell .file-tile[data-color="rose"] { --tile-tone:#e4a0b6; }
 .app-shell .file-tile[data-color="slate"] { --tile-tone:#a6b5ca; }
+
+/* Approved TF monogram brand lockup. */
+.app-shell .sidebar .brand-symbol { width:42px; height:42px; border-radius:13px; }
+.app-shell .glass-header-brand img { width:40px; height:40px; border-radius:12px; display:block; }
+.glass-header-brand small { letter-spacing:.3px; font-size:9px; }
+@media(max-width:790px) { .app-shell .glass-header-brand img { width:30px; height:30px; border-radius:9px; } }

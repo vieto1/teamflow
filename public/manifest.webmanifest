@@ -10,8 +10,8 @@
   "background_color": "#080f17",
   "theme_color": "#080f17",
   "icons": [
-    {"src": "/teamflow/app-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
-    {"src": "/teamflow/app-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
-    {"src": "/teamflow/app-icon-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+    {"src": "/teamflow/tf-monogram-192-v1.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+    {"src": "/teamflow/tf-monogram-512-v1.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
+    {"src": "/teamflow/tf-monogram-maskable-v1.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
   ]
 }
