@@ -1,4 +1,4 @@
-# Teamflow Windows-Helfer 1.4.0 – erste Windows-Version
+# Teamflow Windows-Helfer 1.4.1 – erste Windows-Version
 
 Für Windows 11 x64 (Intel/AMD), empfohlen 16 GB RAM und mindestens 20 GB freier Speicher. Keine separate Python-Installation, kein Mac, KI-Konto, API-Schlüssel oder kostenpflichtiges Abo erforderlich. Windows ARM ist nicht getestet. Firmenrichtlinien können den Start, Downloads, Desktop-Mikrofone oder Autostart verhindern; dann die eigene IT um Freigabe bitten. Keine Sicherheitsrichtlinien oder SmartScreen abschalten. Die Anwendung ist nicht mit einem kommerziellen Windows-Zertifikat signiert und kann deshalb eine Vertrauensabfrage auslösen.
 

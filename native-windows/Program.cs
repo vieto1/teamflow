@@ -60,7 +60,7 @@ internal sealed class MainWindow : Form
             var env=await CoreWebView2Environment.CreateAsync(null,Path.Combine(LocalRuntime.State,"webview"));
             await web.EnsureCoreWebView2Async(env);
             web.CoreWebView2.Settings.IsStatusBarEnabled=false;
-            await web.CoreWebView2.AddScriptToExecuteOnDocumentCreatedAsync("if(window===window.top&&location.origin==='https://vieto1.github.io'&&location.pathname.startsWith('/teamflow/')){window.__TEAMFLOW_NATIVE__={version:'1.4.0',platform:'windows'};window.webkit={messageHandlers:{teamflowRecorder:{postMessage:d=>window.chrome.webview.postMessage(d)}}};}");
+            await web.CoreWebView2.AddScriptToExecuteOnDocumentCreatedAsync("if(window===window.top&&location.origin==='https://vieto1.github.io'&&location.pathname.startsWith('/teamflow/')){window.__TEAMFLOW_NATIVE__={version:'1.4.1',platform:'windows'};window.webkit={messageHandlers:{teamflowRecorder:{postMessage:d=>window.chrome.webview.postMessage(d)}}};}");
             web.CoreWebView2.WebMessageReceived+=async(_,e)=>
             {
                 if(!IsDashboard(e.Source))return;

@@ -30,12 +30,20 @@ internal static class SelfTest
                 using var client=new HttpClient(new HttpClientHandler{UseCookies=false});
                 string? html=null;
                 for(int i=0;i<100;i++){try{html=client.GetStringAsync("http://127.0.0.1:8765/").GetAwaiter().GetResult();break;}catch{Thread.Sleep(100);}}
-                if(html==null||!html.Contains("name=\"csrf\""))throw new Exception("Bundled local service failed to start");
+                if(html==null||!html.Contains("name=\"csrf\"" )||!html.Contains("AUS GESPRÄCHEN"))throw new Exception("Bundled local service failed to start");
                 using var response=client.GetAsync("http://127.0.0.1:8765/api/jobs").GetAwaiter().GetResult();
                 if(response.StatusCode!=System.Net.HttpStatusCode.Forbidden)throw new Exception("Unauthenticated local API accepted");
+                string token=System.Text.RegularExpressions.Regex.Match(html,"name=\"csrf\" content=\"([^\"]+)\"").Groups[1].Value;
+                string id=Guid.NewGuid().ToString();string folder=Path.Combine(testState,"jobs",id);Directory.CreateDirectory(folder);
+                File.WriteAllText(Path.Combine(folder,"result.json"),"{\"title\":\"Überprüfung – Hải 建設\"}");
+                using var authenticated=new HttpRequestMessage(HttpMethod.Get,$"http://127.0.0.1:8765/api/jobs/{id}/result");
+                authenticated.Headers.Add("Cookie","teamflow_session="+token);
+                using var result=client.SendAsync(authenticated).GetAwaiter().GetResult();
+                string text=result.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                if(!result.IsSuccessStatusCode||System.Text.Json.Nodes.JsonNode.Parse(text)?["title"]?.ToString()!="Überprüfung – Hải 建設")throw new Exception("Unicode protocol round-trip failed");
             }
             finally{if(!service.HasExited)service.Kill(true);service.WaitForExit();Directory.Delete(testState,true);}
-            File.WriteAllText(Path.Combine(AppContext.BaseDirectory,"self-test.txt"),"Passed: bridge URL boundaries, paced resampling/mixing, bundled service, session requirement. No actual audio-device capture was tested.");
+            File.WriteAllText(Path.Combine(AppContext.BaseDirectory,"self-test.txt"),"Passed: bridge URL boundaries, paced resampling/mixing, bundled service, session requirement, Unicode protocol round-trip. No actual audio-device capture was tested.");
             return 0;
         }
         catch(Exception ex){File.WriteAllText(Path.Combine(AppContext.BaseDirectory,"self-test.txt"),ex.ToString());return 1;}

@@ -244,7 +244,7 @@ def process(job_id):
         docs = []
         for doc_id in job.get('documents', []):
             metadata = STATE/'documents'/identifier(doc_id)/'document.json'
-            if metadata.exists(): docs.append(json.loads(metadata.read_text()))
+            if metadata.exists(): docs.append(json.loads(metadata.read_text(encoding='utf-8')))
         result['documentChanges'] = document_changes(result, docs, stage)
         result.update(schema='teamflow.local-ai.v1', id=job_id, meeting={'title':job['title'],'date':job['date']}, createdAt=dt.datetime.now(dt.timezone.utc).isoformat())
         result['warnings'].append('Sprecher werden nicht automatisch identifiziert. Zuständigkeiten, Zahlen und Beschlüsse bitte anhand der Quelle prüfen.')
@@ -317,7 +317,7 @@ class Handler(BaseHTTPRequestHandler):
         route = urllib.parse.urlparse(self.path).path
         try:
             if route == '/':
-                html = (ROOT/'web/index.html').read_text().replace('__CSRF__',SESSION)
+                html = (ROOT/'web/index.html').read_text(encoding='utf-8').replace('__CSRF__',SESSION)
                 return self.respond(html,mime='text/html; charset=utf-8',cookie=True)
             if route in ('/app.js','/meeting-bridge.js','/style.css'):
                 return self.respond((ROOT/'web'/route[1:]).read_bytes(),mime='application/javascript; charset=utf-8' if route.endswith('js') else 'text/css; charset=utf-8')
@@ -325,12 +325,12 @@ class Handler(BaseHTTPRequestHandler):
             if route == '/api/jobs':
                 with LOCK: rows = sorted(JOBS.values(),key=lambda j:j['createdAt'],reverse=True)
                 return self.respond(rows)
-            if route == '/api/documents': return self.respond([json.loads(p.read_text()) for p in (STATE/'documents').glob('*/document.json')])
+            if route == '/api/documents': return self.respond([json.loads(p.read_text(encoding='utf-8')) for p in (STATE/'documents').glob('*/document.json')])
             parts = route.strip('/').split('/')
             if len(parts)>=4 and parts[:2]==['api','jobs']:
                 folder = job_dir(parts[2])
-                if parts[3]=='transcript': return self.respond(json.loads((folder/'transcript-source.json').read_text()))
-                if parts[3]=='result': return self.respond(json.loads((folder/'result.json').read_text()))
+                if parts[3]=='transcript': return self.respond(json.loads((folder/'transcript-source.json').read_text(encoding='utf-8')))
+                if parts[3]=='result': return self.respond(json.loads((folder/'result.json').read_text(encoding='utf-8')))
                 if parts[3]=='export': return self.respond((folder/'review.json').read_bytes(),mime='application/json; charset=utf-8',filename='Teamflow-Protokoll.json')
                 if len(parts)==5 and parts[3]=='revision': return self.respond((folder/'revisions'/(identifier(parts[4])+'.txt')).read_bytes(),mime='text/plain; charset=utf-8',filename='Teamflow-Aenderungsfassung.txt')
             return self.respond({'error':'Nicht gefunden.'},404)
@@ -427,10 +427,10 @@ def initialize():
     global CONFIG
     STATE.mkdir(parents=True,exist_ok=True); (STATE/'jobs').mkdir(exist_ok=True); (STATE/'documents').mkdir(exist_ok=True)
     config=STATE/'config.json'
-    if config.exists(): CONFIG=json.loads(config.read_text())
+    if config.exists(): CONFIG=json.loads(config.read_text(encoding='utf-8'))
     for path in (STATE/'jobs').glob('*/job.json'):
         try:
-            job=json.loads(path.read_text()); identifier(job['id'])
+            job=json.loads(path.read_text(encoding='utf-8')); identifier(job['id'])
             if job['status'] in ('processing','queued'): job.update(status='failed',stage='Unterbrochen',error='Der lokale Dienst wurde beendet. Analyse bitte erneut starten.'); atomic_json(path,job)
             JOBS[job['id']]=job
         except (ValueError,KeyError): pass

@@ -85,7 +85,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release view windows-helper-1.4.0 *> $null
-          if($LASTEXITCODE -ne 0){gh release create windows-helper-1.4.0 --target "$env:GITHUB_SHA" --prerelease --title 'Teamflow Windows-Helfer 1.4.0 (Gerätetest ausstehend)' --notes-file native-windows/README.md}
-          gh release upload windows-helper-1.4.0 "$env:RUNNER_TEMP/Teamflow-Windows-Helfer.zip" --clobber
+          gh release view windows-helper-1.4.1 *> $null
+          if($LASTEXITCODE -ne 0){gh release create windows-helper-1.4.1 --target "$env:GITHUB_SHA" --prerelease --title 'Teamflow Windows-Helfer 1.4.1 (Gerätetest ausstehend)' --notes-file native-windows/README.md}
+          gh release upload windows-helper-1.4.1 "$env:RUNNER_TEMP/Teamflow-Windows-Helfer.zip" --clobber
           if($LASTEXITCODE -ne 0){throw 'Release upload failed'}
