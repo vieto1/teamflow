@@ -1,0 +1,44 @@
+name: Build Mac helper
+on:
+  push:
+    branches: [main]
+    paths: ['native-mac/**', '.github/workflows/native-mac.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: native-helper
+  cancel-in-progress: true
+jobs:
+  native:
+    runs-on: macos-15
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile both Mac architectures
+        run: |
+          TEAMFLOW_ARCH=arm64 bash native-mac/build.sh "$RUNNER_TEMP/arm"
+          TEAMFLOW_ARCH=x86_64 bash native-mac/build.sh "$RUNNER_TEMP/intel"
+          mkdir -p "$RUNNER_TEMP/package"
+          ditto "$RUNNER_TEMP/arm/Teamflow.app" "$RUNNER_TEMP/package/Teamflow.app"
+          lipo -create "$RUNNER_TEMP/arm/Teamflow.app/Contents/MacOS/Teamflow" "$RUNNER_TEMP/intel/Teamflow.app/Contents/MacOS/Teamflow" -output "$RUNNER_TEMP/package/Teamflow.app/Contents/MacOS/Teamflow"
+          codesign --force --sign - --identifier de.teamflow.desktop "$RUNNER_TEMP/package/Teamflow.app"
+          codesign --verify --deep --strict "$RUNNER_TEMP/package/Teamflow.app"
+          "$RUNNER_TEMP/package/Teamflow.app/Contents/MacOS/Teamflow" --self-test
+          cp native-mac/Installieren.command "$RUNNER_TEMP/package/"
+          cp "native-mac/Autostart ausschalten.command" "$RUNNER_TEMP/package/"
+          cp native-mac/README.md "$RUNNER_TEMP/package/"
+          chmod +x "$RUNNER_TEMP/package/"*.command
+          ditto -c -k --sequesterRsrc --keepParent "$RUNNER_TEMP/package" "$RUNNER_TEMP/Teamflow-Mac-Helfer.zip"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Teamflow-Mac-Helfer
+          path: ${{ runner.temp }}/Teamflow-Mac-Helfer.zip
+      - name: Publish pre-release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if ! gh release view mac-helper-1.3.0 >/dev/null 2>&1; then
+            gh release create mac-helper-1.3.0 --target "$GITHUB_SHA" --prerelease --title "Teamflow Mac-Helfer 1.3.0 (Gerätetest ausstehend)" --notes-file native-mac/README.md
+          fi
+          gh release upload mac-helper-1.3.0 "$RUNNER_TEMP/Teamflow-Mac-Helfer.zip" --clobber
