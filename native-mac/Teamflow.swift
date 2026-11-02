@@ -194,6 +194,7 @@ final class AudioRecorder: NSObject, SCStreamOutput, SCStreamDelegate {
         cancelRequested = false; pendingResult = nil; busy = true; activity = ProcessInfo.processInfo.beginActivity(options: [.userInitiated, .idleSystemSleepDisabled], reason: "Teamflow-Aufnahme und lokale Transkription"); emit(["type":"progress","stage":"Mac-Aufnahme wird vorbereitet …"])
         do {
             try await ensureServer()
+            if cancelRequested { throw failure("Aufnahmestart wurde abgebrochen.") }
             let capture = AudioRecorder(); audio = capture; capture.setMuted(true)
             capture.onFailure = { [weak self] message in Task { @MainActor in self?.emit(["type":"warning","stage":"Audio-Unterbrechung: "+message]); await self?.stop() } }
             try await capture.start(); if cancelRequested { _ = try? await capture.stop(); audio = nil; busy = false; endActivity(); emit(["type":"error","error":"Aufnahmestart wurde abgebrochen."]); return }; recording = true; item.button?.title = "● REC"
