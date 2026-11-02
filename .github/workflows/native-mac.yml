@@ -2,7 +2,7 @@ name: Build Mac helper
 on:
   push:
     branches: [main]
-    paths: ['native-mac/**', '.github/workflows/native-mac.yml']
+    paths: ['native-mac/**', 'mac-companion/server.py', 'mac-companion/web/**', 'public/app-icon-512.png', '.github/workflows/native-mac.yml']
   workflow_dispatch:
 permissions:
   contents: write

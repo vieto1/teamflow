@@ -6,7 +6,7 @@ import CoreMedia
 
 let dashboard = URL(string: "https://vieto1.github.io/teamflow/")!
 let support = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Library/Application Support/Teamflow-KI")
-let companion = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Applications/Teamflow-KI")
+let companion = (Bundle.main.resourceURL ?? FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Applications")).appendingPathComponent("Teamflow-KI")
 func failure(_ text: String) -> NSError { NSError(domain: "Teamflow", code: 1, userInfo: [NSLocalizedDescriptionKey: text]) }
 
 // Only audio outputs are registered. No screen frames are written to disk.
@@ -129,7 +129,7 @@ final class AudioRecorder: NSObject, SCStreamOutput, SCStreamDelegate {
         if busy { let alert = NSAlert(); alert.messageText = "Aufnahme oder Auswertung läuft noch."; alert.informativeText = "Bitte zuerst die Aufnahme stoppen und die Verarbeitung abwarten. Das Fenster darf minimiert werden."; alert.runModal(); return .terminateCancel }
         ownedServer?.terminate(); ollama?.terminate(); return .terminateNow
     }
-    func windowShouldClose(_ sender: NSWindow) -> Bool { if recording { Task { await stop() } }; return true }
+    func windowShouldClose(_ sender: NSWindow) -> Bool { if recording { Task { await stop() } } else if busy { cancelRequested = true }; return true }
     func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
         if webView === web && navigationAction.targetFrame?.isMainFrame == true, let url = navigationAction.request.url,
            !(url.scheme == "https" && url.host == "vieto1.github.io" && url.path.hasPrefix("/teamflow/")) {
@@ -142,8 +142,8 @@ final class AudioRecorder: NSObject, SCStreamOutput, SCStreamDelegate {
         let child = NSWindow(contentRect: NSRect(x:0,y:0,width:700,height:750),styleMask:[.titled,.closable,.resizable],backing:.buffered,defer:false)
         child.contentView = popup; child.title = "Teamflow · Anmeldung"; child.center(); child.makeKeyAndOrderFront(nil); popups.append(child); return popup
     }
-    func webViewWebContentProcessDidTerminate(_ webView: WKWebView) { if webView === web && recording { Task { await stop() } } }
-    func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) { if webView === web && recording { Task { await stop() } } }
+    func webViewWebContentProcessDidTerminate(_ webView: WKWebView) { if webView === web { if recording { Task { await stop() } } else if busy { cancelRequested = true } } }
+    func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) { if webView === web { if recording { Task { await stop() } } else if busy { cancelRequested = true } } }
     func webViewDidClose(_ webView: WKWebView) { popups.filter { $0.contentView === webView }.forEach { $0.close() } }
     func webView(_ webView: WKWebView, requestMediaCapturePermissionFor origin: WKSecurityOrigin, initiatedByFrame frame: WKFrameInfo, type: WKMediaCaptureType, decisionHandler: @escaping (WKPermissionDecision) -> Void) { decisionHandler(.prompt) }
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
@@ -185,8 +185,8 @@ final class AudioRecorder: NSObject, SCStreamOutput, SCStreamDelegate {
             ownedServer = try spawn(try path("python3.12"),[companion.appendingPathComponent("server.py").path])
             for _ in 0..<40 { try await Task.sleep(nanoseconds:250_000_000); if let response = try? await session.data(from:URL(string:"http://127.0.0.1:8765/")!) { page = response; break } }
         }
-        guard let (data,response) = page, let http = response as? HTTPURLResponse, http.statusCode == 200, http.value(forHTTPHeaderField:"X-Teamflow-Version") != nil,
-              let html = String(data:data,encoding:.utf8), let range = html.range(of:"name=\"csrf\" content=\""), let end = html[range.upperBound...].firstIndex(of:"\"") else { throw failure("Lokaler Teamflow-Dienst ist nicht erreichbar oder Port 8765 ist belegt.") }
+        guard let (data,response) = page, let http = response as? HTTPURLResponse, http.statusCode == 200, http.value(forHTTPHeaderField:"X-Teamflow-Version") == "1.2.0",
+              let html = String(data:data,encoding:.utf8), let range = html.range(of:"name=\"csrf\" content=\""), let end = html[range.upperBound...].firstIndex(of:"\"") else { throw failure("Lokaler Teamflow-Dienst ist nicht erreichbar oder veraltet. Bitte das alte KI-Terminal einmal beenden (Ctrl+C), danach Aufnahme erneut starten. Port 8765 muss frei sein.") }
         csrf = String(html[range.upperBound..<end])
     }
     func endActivity() { if let activity { ProcessInfo.processInfo.endActivity(activity) }; activity = nil }

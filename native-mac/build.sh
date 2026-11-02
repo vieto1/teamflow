@@ -3,6 +3,9 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 DEST="${1:-$ROOT/build}"
 mkdir -p "$DEST/Teamflow.app/Contents/MacOS" "$DEST/Teamflow.app/Contents/Resources"
+mkdir -p "$DEST/Teamflow.app/Contents/Resources/Teamflow-KI"
+cp "$ROOT/../mac-companion/server.py" "$DEST/Teamflow.app/Contents/Resources/Teamflow-KI/"
+ditto "$ROOT/../mac-companion/web" "$DEST/Teamflow.app/Contents/Resources/Teamflow-KI/web"
 ICONSET="$DEST/Teamflow.iconset"
 mkdir -p "$ICONSET"
 for SIZE in 16 32 128 256 512; do

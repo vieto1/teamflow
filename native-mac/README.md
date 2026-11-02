@@ -1,8 +1,8 @@
 # Teamflow Mac-Helfer 1.3.0 – erste native Version
 
-Voraussetzung: macOS 15 oder neuer; bestehende lokale Teamflow-KI mit config.json, Whisper und Ollama aus der bisherigen Einrichtung. Die Modelle werden wiederverwendet. Kein API-Abo, keine laufenden KI-API-Gebühren. Eigene Hardware und Strom bleiben erforderlich.
+Voraussetzung: macOS 15 oder neuer; bestehende lokale Teamflow-KI mit config.json, Whisper und Ollama aus der bisherigen Einrichtung. Die Modelle werden wiederverwendet. Der aktuelle Python-Dienst und die lokale Oberfläche sind im App-Paket enthalten; vorhandene Modelle, Konfiguration und Protokolle werden nicht überschrieben. Kein API-Abo, keine laufenden KI-API-Gebühren. Eigene Hardware und Strom bleiben erforderlich.
 
-ZIP entpacken und Installieren.command öffnen. Die App liegt danach unter ~/Applications/Teamflow.app und startet künftig bei der Mac-Anmeldung im Hintergrund. Über das TF-Menü öffnest du Teamflow. Teamflow für die Aufnahme **in dieser Mac-App** verwenden; die normale Website in Safari/Chrome verwendet weiterhin die bisherige Browseraufnahme. Die anderen nehmen weiter über Handy, Windows oder Mac am selben Jitsi-Raum teil.
+Ein eventuell noch laufendes altes KI-Terminal einmal mit Ctrl+C beenden. ZIP entpacken und Installieren.command öffnen. Die App liegt danach unter ~/Applications/Teamflow.app und startet künftig bei der Mac-Anmeldung im Hintergrund. Über das TF-Menü öffnest du Teamflow. Teamflow für die Aufnahme **in dieser Mac-App** verwenden; die normale Website in Safari/Chrome verwendet weiterhin die bisherige Browseraufnahme. Die anderen nehmen weiter über Handy, Windows oder Mac am selben Jitsi-Raum teil.
 
 Beim ersten Aufnahmestart Mikrofon und Bildschirm-/Systemaudiozugriff für Teamflow erlauben. macOS kann einen App-Neustart verlangen. Die App ist kostenlos lokal signiert, nicht von Apple notarisiert; Gatekeeper kann eine gezielte Freigabe unter Datenschutz & Sicherheit verlangen. Keine Schutzfunktionen global abschalten. Keine Berechtigungen werden automatisch umgangen. macOS kann später erneut nachfragen.
 
