@@ -60,7 +60,7 @@ def update(job_id, **values):
 
 def run_command(args, timeout=7200):
     # Never invoke a shell or pass uploaded file names as command options.
-    with subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE) as proc:
+    with subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0)) as proc:
         with LOCK: CHILDREN.add(proc)
         try:
             out, err = proc.communicate(timeout=timeout)

@@ -1,0 +1,88 @@
+name: Build Windows helper
+on:
+  push:
+    branches: [main]
+    paths: ['native-windows/**', 'mac-companion/server.py', 'mac-companion/web/**', '.github/workflows/native-windows.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: native-windows-helper
+  cancel-in-progress: true
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Build native app and private Python service
+        run: |
+          $ErrorActionPreference='Stop'
+          $package=Join-Path $env:RUNNER_TEMP 'package'
+          $app=Join-Path $package 'Teamflow'
+          dotnet publish native-windows/Teamflow.csproj -c Release -r win-x64 --self-contained true -o $app
+          if($LASTEXITCODE -ne 0){throw 'Native build failed'}
+          python -m pip install pyinstaller==6.16.0
+          python -m PyInstaller --clean --noconfirm --onedir --console --name Teamflow-KI --add-data "$env:GITHUB_WORKSPACE/mac-companion/web;web" --distpath "$env:RUNNER_TEMP/python-dist" --workpath "$env:RUNNER_TEMP/python-work" --specpath "$env:RUNNER_TEMP" "$env:GITHUB_WORKSPACE/mac-companion/server.py"
+          if($LASTEXITCODE -ne 0){throw 'Python service build failed'}
+          Copy-Item "$env:RUNNER_TEMP/python-dist/Teamflow-KI" "$app/companion" -Recurse
+          Copy-Item native-windows/runtime-downloads.json $app
+          New-Item "$app/licenses" -ItemType Directory -Force | Out-Null
+          Copy-Item "$env:pythonLocation/LICENSE.txt" "$app/licenses/Python-LICENSE.txt"
+          Copy-Item native-windows/README.md "$app/licenses/THIRD-PARTY.md"
+          Copy-Item native-windows/Installieren.cmd,native-windows/Autostart-ausschalten.cmd,native-windows/README.md $package
+      - name: Build portable CPU speech recognition
+        run: |
+          git clone --depth 1 --branch v1.9.5 https://github.com/ggml-org/whisper.cpp.git "$env:RUNNER_TEMP/whisper"
+          cmake -S "$env:RUNNER_TEMP/whisper" -B "$env:RUNNER_TEMP/whisper-build" -A x64 -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded -DBUILD_SHARED_LIBS=OFF -DGGML_NATIVE=OFF -DGGML_AVX512=OFF -DWHISPER_BUILD_TESTS=OFF -DGGML_OPENMP=OFF
+          if($LASTEXITCODE -ne 0){throw 'Whisper configuration failed'}
+          cmake --build "$env:RUNNER_TEMP/whisper-build" --config Release --target whisper-cli -j 4
+          if($LASTEXITCODE -ne 0){throw 'Whisper build failed'}
+          $tools="$env:RUNNER_TEMP/package/Teamflow/tools"
+          New-Item $tools -ItemType Directory -Force | Out-Null
+          Get-ChildItem "$env:RUNNER_TEMP/whisper-build" -Recurse -File | Where-Object { $_.Name -eq 'whisper-cli.exe' -or $_.Extension -eq '.dll' } | Copy-Item -Destination $tools
+          Copy-Item "$env:RUNNER_TEMP/whisper/LICENSE" "$env:RUNNER_TEMP/package/Teamflow/licenses/whisper-LICENSE.txt"
+      - name: Add verified FFmpeg LGPL shared binaries
+        run: |
+          $url='https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-n8.1-latest-win64-lgpl-shared-8.1.zip'
+          $sha='ef8da9db3cb771bc6ae7835c6bf51c4543d0d0e852873d13aaac637fbd457853'
+          Invoke-WebRequest $url -OutFile "$env:RUNNER_TEMP/ffmpeg.zip"
+          if((Get-FileHash "$env:RUNNER_TEMP/ffmpeg.zip" -Algorithm SHA256).Hash.ToLowerInvariant() -ne $sha){throw 'FFmpeg checksum mismatch; refresh pinned asset after upstream latest release changes'}
+          Expand-Archive "$env:RUNNER_TEMP/ffmpeg.zip" "$env:RUNNER_TEMP/ffmpeg"
+          $folder=(Get-ChildItem "$env:RUNNER_TEMP/ffmpeg" -Directory | Select-Object -First 1).FullName
+          Copy-Item "$folder/bin/*" "$env:RUNNER_TEMP/package/Teamflow/tools"
+          Get-ChildItem $folder -File | Copy-Item -Destination "$env:RUNNER_TEMP/package/Teamflow/licenses"
+          if(Test-Path "$folder/doc"){Copy-Item "$folder/doc" "$env:RUNNER_TEMP/package/Teamflow/licenses/FFmpeg-doc" -Recurse}
+      - name: Verify bundled executables and service boundary
+        run: |
+          $app="$env:RUNNER_TEMP/package/Teamflow"
+          & "$app/tools/ffmpeg.exe" -version
+          if($LASTEXITCODE -ne 0){throw 'FFmpeg startup failed'}
+          & "$app/tools/whisper-cli.exe" --help
+          if($LASTEXITCODE -ne 0){throw 'Whisper startup failed'}
+          $process=Start-Process "$app/Teamflow.exe" '--self-test' -Wait -PassThru
+          Get-Content "$app/self-test.txt"
+          if($process.ExitCode -ne 0){throw 'Helper self-test failed'}
+          Remove-Item "$app/self-test.txt"
+          Compress-Archive -Path "$env:RUNNER_TEMP/package/*" -DestinationPath "$env:RUNNER_TEMP/Teamflow-Windows-Helfer.zip"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Teamflow-Windows-Helfer
+          path: ${{ runner.temp }}/Teamflow-Windows-Helfer.zip
+      - name: Publish Windows pre-release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view windows-helper-1.4.0 *> $null
+          if($LASTEXITCODE -ne 0){gh release create windows-helper-1.4.0 --target "$env:GITHUB_SHA" --prerelease --title 'Teamflow Windows-Helfer 1.4.0 (Gerätetest ausstehend)' --notes-file native-windows/README.md}
+          gh release upload windows-helper-1.4.0 "$env:RUNNER_TEMP/Teamflow-Windows-Helfer.zip" --clobber
+          if($LASTEXITCODE -ne 0){throw 'Release upload failed'}
