@@ -39,6 +39,9 @@ jobs:
           New-Item "$app/licenses" -ItemType Directory -Force | Out-Null
           Copy-Item "$env:pythonLocation/LICENSE.txt" "$app/licenses/Python-LICENSE.txt"
           Copy-Item native-windows/README.md "$app/licenses/THIRD-PARTY.md"
+          Copy-Item native-windows/licenses/* "$app/licenses/"
+          Get-ChildItem "$env:USERPROFILE/.nuget/packages/microsoft.web.webview2/1.0.3800.47" -File | Where-Object { $_.Name -match 'LICENSE|NOTICE' } | ForEach-Object { Copy-Item $_.FullName (Join-Path "$app/licenses" ('WebView2-'+$_.Name)) }
+          Get-ChildItem "$env:USERPROFILE/.nuget/packages/microsoft.netcore.app.runtime.win-x64" -Recurse -File | Where-Object { $_.Name -match '^LICENSE|^THIRD-PARTY-NOTICES' } | ForEach-Object { Copy-Item $_.FullName (Join-Path "$app/licenses" ('DotNET-'+$_.Name)) }
           Copy-Item native-windows/Installieren.cmd,native-windows/Autostart-ausschalten.cmd,native-windows/README.md $package
       - name: Build portable CPU speech recognition
         run: |
