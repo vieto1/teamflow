@@ -1,0 +1,16 @@
+const fs=require('fs'),vm=require('vm'),ts=require('typescript'),assert=require('assert');
+(async()=>{
+ const handlers={},tracks=[],nodes=[],requests=[];let result,closed=0,allowAudio=true;
+ const track=()=>{const t={enabled:true,stop(){this.stopped=true},addEventListener(){}};tracks.push(t);return t};
+ const sharedAudio=track(),video=track(),mic=track();
+ const shared={getAudioTracks:()=>allowAudio?[sharedAudio]:[],getVideoTracks:()=>[video],getTracks:()=>[sharedAudio,video]};
+ class Worklet{constructor(){this.port={postMessage:()=>{this.port.onmessage({data:{samples:new Int16Array(16000).buffer,offset:0}});this.port.onmessage({data:{flushed:true}})}}}disconnect(){}}
+ class Audio{constructor(){this.sampleRate=16000;this.audioWorklet={addModule:async()=>{}};this.destination={}}createMediaStreamSource(){return {connect(){}}}createGain(){return {gain:{},connect(){return {connect(){}}}}}async resume(){}async close(){closed++}}
+ const transcript='Viet übernimmt die Präsentation.';
+ const context={exports:{},require:n=>n==='react'?{useState:v=>[v,()=>{}],useRef:v=>({current:v}),useEffect:f=>f()}:n==='./ai-protocol'?{parseLocalProtocol:v=>{assert.equal(v.schema,'teamflow.local-ai.v1');assert(v.transcript.includes(transcript));return v}}:{},Event:class{},window:{dispatchEvent(){},AudioWorkletNode:Worklet,addEventListener:(n,f)=>handlers[n]=f,removeEventListener(){}},navigator:{mediaDevices:{getDisplayMedia:async()=>shared,getUserMedia:async()=>({getTracks:()=>[mic],getAudioTracks:()=>[mic]})}},AudioContext:Audio,AudioWorkletNode:class extends Worklet{constructor(...args){super(...args);nodes.push(this)}connect(){return {connect(){}}}},MediaStream:class{},crypto:require('crypto').webcrypto,Blob,FormData,URL,AbortSignal,Date,setInterval:()=>0,clearInterval(){},setTimeout,clearTimeout,document:{documentElement:{dataset:{}},createElement:()=>({click(){}})},fetch:async(url,args)=>{requests.push(args.body);return {ok:true,json:async()=>args.body instanceof FormData?{transcript}:{summary:'Präsentation vorbereiten.',keyPoints:[],decisions:[],todos:[]}}}};
+ vm.runInNewContext(ts.transpileModule(fs.readFileSync('src/app/cloud-recorder.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2020}}).outputText,context);
+ const wav=context.exports.pcmWav([new Int16Array(16000).buffer],32000);const bytes=new DataView(await wav.arrayBuffer());assert.equal(wav.size,32044);assert.equal(bytes.getUint32(24,true),16000);assert.equal(bytes.getUint32(40,true),32000);
+ const c=context.exports.useCloudRecorder(v=>{result=v});c.setMicrophoneMuted(false);await c.start({id:'test',title:'Test',date:'2026-11-03'});assert.equal(nodes.length,1);assert.equal(mic.enabled,true);c.setMicrophoneMuted(true);assert.equal(mic.enabled,false);await c.stop();assert.equal(requests.length,2);assert.equal(result.sourceMeetingId,'test');assert(result.transcript.includes('[00:00]'));assert.equal(closed,1);assert(tracks.every(t=>t.stopped));
+ allowAudio=false;const count=nodes.length;await c.start({id:'test',title:'Test',date:'2026-11-03'});assert.equal(nodes.length,count,'No capture when tab audio is missing');
+ console.log('Cloud recording: WAV encoding, mixed-audio setup, mute sync, final flush, transcription, summary, result routing and cleanup passed.');
+})().catch(e=>{console.error(e);process.exit(1)});

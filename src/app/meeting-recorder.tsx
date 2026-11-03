@@ -2,9 +2,11 @@
 import {useEffect,useRef,useState} from 'react';
 import type {Meeting} from '../lib/team-sync-core';
 import {parseLocalProtocol} from './ai-protocol';
+import {useCloudRecorder} from './cloud-recorder';
 declare global {interface Window {__TEAMFLOW_NATIVE__?:{version:string;platform?:string};webkit?:{messageHandlers?:{teamflowRecorder?:{postMessage:(data:unknown)=>void}}}}}
 const LOCAL='http://127.0.0.1:8765';
 export function useMeetingRecorder(onResult:(value:unknown)=>void){
+ const cloud=useCloudRecorder(onResult);
  const [phase,setPhase]=useState('idle'),[elapsed,setElapsed]=useState(0),[error,setError]=useState(''),[progress,setProgress]=useState('');
  const [native,setNative]=useState(false),[nativePlatform,setNativePlatform]=useState('mac');
  const nativeRef=useRef(false);
@@ -49,12 +51,22 @@ export function useMeetingRecorder(onResult:(value:unknown)=>void){
  }catch(e){await release();state(popup.current&&!popup.current.closed?'ready':'error');setError(e instanceof Error?e.message:'Audiofreigabe fehlgeschlagen.')}
  }
  function stop(){if(nativeRef.current&&['recording','starting'].includes(phaseRef.current)){nativeSend({command:'stop'});return}if(recorder.current?.state==='recording')recorder.current.stop()}
- function setMicrophoneMuted(value:boolean){microphoneMuted.current=value;if(nativeRef.current)nativeSend({command:'mute',muted:value});streams.current[1]?.getAudioTracks().forEach(t=>{t.enabled=!value})}
- return {native,nativePlatform,phase,elapsed,error,progress,connect,start,startNative,stop,finishMeeting:stop,setMicrophoneMuted};
+ function setMicrophoneMuted(value:boolean){cloud.setMicrophoneMuted(value);microphoneMuted.current=value;if(nativeRef.current)nativeSend({command:'mute',muted:value});streams.current[1]?.getAudioTracks().forEach(t=>{t.enabled=!value})}
+ return {cloud,native,nativePlatform,phase:native?phase:cloud.phase,elapsed:native?elapsed:cloud.elapsed,error:native?error:cloud.error,progress:native?progress:cloud.progress,connect,start,startNative,stop,finishMeeting:()=>{stop();void cloud.stop()},setMicrophoneMuted};
 }
 export type MeetingRecorder=ReturnType<typeof useMeetingRecorder>;
 export function RecordingControls({controller:c,meeting,joined}:{controller:MeetingRecorder;meeting:Meeting;joined:boolean}){
  const [setupOpen,setSetupOpen]=useState(false);
+ const q=c.cloud;
+ if(!c.native)return <div className="meeting-recording cloud-recording"><div className="meeting-recording-actions">
+ <button className="video-copy" disabled={!joined||['starting','recording','processing'].includes(q.phase)} onClick={()=>void q.start(meeting)}>{q.phase==='starting'?'Ton freigeben …':'● Aufnahme starten'}</button>
+ {q.phase==='recording'&&<button className="call-leave" onClick={()=>void q.stop()}>■ Aufnahme stoppen</button>}
+ {q.hasBackup&&q.phase!=='recording'&&<button className="video-copy" onClick={q.download}>Audio sichern ↓</button>}
+ {q.phase==='error'&&q.hasBackup&&<button className="video-copy" onClick={()=>void q.retry()}>Erneut verarbeiten</button>}
+ <span className={q.phase==='recording'?'recording-live':'recording-state'} role="status">{q.phase==='recording'?`● REC · ${Math.floor(q.elapsed/60).toString().padStart(2,'0')}:${(q.elapsed%60).toString().padStart(2,'0')} · ${q.level?'Ton erkannt':'Momentan kein Ton'}`:q.phase==='processing'?'KI verarbeitet …':q.phase==='done'?'KI-Protokoll bereit':joined?'Bereit zur Aufnahme':'Zuerst dem Meeting beitreten'}</span></div>
+ {q.progress&&<p className="recording-state" role="status">{q.progress}</p>}{q.error&&<p role="alert">{q.error}</p>}
+ <small>Groq-Cloud · Audio und Transkript werden zur Verarbeitung an Groq gesendet. Eine Person zeichnet in Chrome oder Edge auf Mac/Windows auf: Teamflow-Tab wählen und „Tab-Audio teilen“ aktivieren. Mikrofon folgt eurer Meeting-Stummschaltung. Maximal 2 Stunden je Aufnahme; kostenlose Kontingente können die Verarbeitung begrenzen. Keine Helfer-App nötig. Dieses Fenster geöffnet lassen. Beim Verlassen auf diesem Gerät endet die Aufnahme; danach erscheinen die Ergebnisse im KI-Protokoll zur Prüfung.</small>
+ </div>;
  return <div className="meeting-recording"><div className="meeting-recording-actions">
  {c.native?<button className="video-copy" onClick={()=>c.startNative(meeting)} disabled={!joined||['starting','recording','processing'].includes(c.phase)}>{c.phase==='starting'?'Aufnahme wird gestartet …':'● Aufnahme starten'}</button>:['idle','connecting','error'].includes(c.phase)?<button className="video-copy" aria-expanded={setupOpen} aria-controls="meeting-ai-setup" onClick={()=>setSetupOpen(v=>!v)}>KI-Aufnahme einrichten</button>:<button className="video-copy" onClick={()=>void c.start()} disabled={!joined||!['ready','done'].includes(c.phase)}>{c.phase==='starting'?'Audio freigeben …':'● Aufnahme starten'}</button>}
  {c.phase==='recording'&&<button className="call-leave" onClick={c.stop}>■ Aufnahme stoppen</button>}

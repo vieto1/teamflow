@@ -19,7 +19,7 @@ const initials=(name:string)=>name.split(' ').map(s=>s[0]).slice(0,2).join('').t
 
 export default function Home(){
  const [incomingProtocol,setIncomingProtocol]=useState<unknown>(null);
- const recording=useMeetingRecorder(value=>{setIncomingProtocol(value);setSection('ai');setNotice('KI-Protokoll vom lokalen Helfer empfangen. Bitte Ergebnisse prüfen und bewusst teilen.');});
+ const recording=useMeetingRecorder(value=>{setIncomingProtocol(value);setSection('ai');setNotice('KI-Protokoll empfangen. Bitte Ergebnisse prüfen und bewusst teilen.');});
  const invitationHandled=useRef(false);
  const [activeCall,setActiveCall]=useState<Meeting|null>(null);
  const [deleteConfirm,setDeleteConfirm]=useState(false); const [undoItem,setUndoItem]=useState<{meeting?:Meeting;task?:Todo;index?:number;linkedTaskIds?:string[]}|null>(null);
@@ -220,7 +220,7 @@ function VideoCall({meeting,onClose,controller}:{meeting:Meeting;onClose:()=>voi
  },[room,attempt]);
  useEffect(()=>{if(!copied)return;const timer=setTimeout(()=>setCopied(false),2500);return()=>clearTimeout(timer)},[copied]);
  useEffect(()=>{const timer=setInterval(()=>setRecordingClock(Date.now()),1000);return()=>clearInterval(timer)},[]);
- useEffect(()=>{if(state!=='joined')return;const active=controller.phase==='recording';try{api.current?.executeCommand('sendEndpointTextMessage','',JSON.stringify({type:'teamflow:recording-status',active,elapsed:controller.elapsed}));if(active&&controller.elapsed===0)api.current?.executeCommand('sendChatMessage','● Teamflow: Die lokale Meetingaufnahme wurde gestartet.')}catch{}},[controller.phase,controller.elapsed,state]);
+ useEffect(()=>{if(state!=='joined')return;const active=controller.phase==='recording';try{api.current?.executeCommand('sendEndpointTextMessage','',JSON.stringify({type:'teamflow:recording-status',active,elapsed:controller.elapsed}));if(active&&controller.elapsed===0)api.current?.executeCommand('sendChatMessage','● Teamflow: Die Meetingaufnahme wurde gestartet.')}catch{}},[controller.phase,controller.elapsed,state]);
  async function copy(){try{await navigator.clipboard.writeText(invitationUrl(room));setCopied(true);setCopyError(false)}catch{setCopyError(true)}}
  function leave(){try{api.current?.executeCommand('hangup')}finally{closeRef.current()}}
  function openDirect(){controllerRef.current.finishMeeting();}

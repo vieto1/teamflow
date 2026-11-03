@@ -1,0 +1,51 @@
+'use client';
+import {useEffect,useRef,useState} from 'react';
+import type {Meeting} from '../lib/team-sync-core';
+import {parseLocalProtocol} from './ai-protocol';
+const API='https://bewbgijcyyckamhnomrd.supabase.co/functions/v1/teamflow-ai';
+export function pcmWav(parts:BlobPart[],bytes:number){const h=new ArrayBuffer(44),v=new DataView(h);const str=(p:number,s:string)=>[...s].forEach((c,i)=>v.setUint8(p+i,c.charCodeAt(0)));str(0,'RIFF');v.setUint32(4,36+bytes,true);str(8,'WAVE');str(12,'fmt ');v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);v.setUint32(24,16000,true);v.setUint32(28,32000,true);v.setUint16(32,2,true);v.setUint16(34,16,true);str(36,'data');v.setUint32(40,bytes,true);return new Blob([h,...parts],{type:'audio/wav'})}
+type Chunk={pcm:ArrayBuffer;offset:number;text?:string};
+export function useCloudRecorder(onResult:(result:unknown)=>void){
+ const [phase,setPhase]=useState('idle'),[elapsed,setElapsed]=useState(0),[error,setError]=useState(''),[progress,setProgress]=useState(''),[level,setLevel]=useState(false),[hasBackup,setHasBackup]=useState(false);
+ const live=useRef(true),phaseRef=useRef('idle'),chunks=useRef<Chunk[]>([]),queue=useRef(Promise.resolve()),meeting=useRef<Meeting|null>(null),streams=useRef<MediaStream[]>([]),audio=useRef<AudioContext|null>(null),node=useRef<AudioWorkletNode|null>(null),flush=useRef<(()=>void)|null>(null),began=useRef(0),muted=useRef(true),callback=useRef(onResult),wake=useRef<WakeLockSentinel|null>(null),failure=useRef(''),finalizing=useRef(false);callback.current=onResult;
+ function state(s:string){phaseRef.current=s;if(live.current)setPhase(s)}
+ function note(s:string){if(live.current)setProgress(s)}
+ async function request(body:FormData|Record<string,unknown>){for(let attempt=0;attempt<3;attempt++){const form=body instanceof FormData;const r=await fetch(API,{method:'POST',headers:form?{}:{'Content-Type':'application/json'},body:form?body:JSON.stringify(body),signal:AbortSignal.timeout(90000)});const d=await r.json();if(r.ok)return d;if(r.status===429&&attempt<2){const wait=Number(r.headers.get('Retry-After')||60);if(wait>65)throw Error(d.error);note('Kostenloses Kontingent kurz ausgelastet · erneuter Versuch in einer Minute …');await new Promise(resolve=>setTimeout(resolve,Math.max(5,wait)*1000));continue}throw Error(d.error||'KI-Verarbeitung fehlgeschlagen.')}throw Error('KI derzeit ausgelastet.')}
+ async function transcribe(c:Chunk){if(c.text!==undefined)return;const f=new FormData();f.set('file',pcmWav([c.pcm],c.pcm.byteLength),'meeting.wav');const d=await request(f);c.text=d.transcript;note(`${chunks.current.filter(x=>x.text!==undefined).length} Audioabschnitte transkribiert · Aufnahme läuft weiter`)}
+ function accept(pcm:ArrayBuffer,offset:number){const c={pcm,offset};chunks.current.push(c);setHasBackup(true);queue.current=queue.current.then(async()=>{if(failure.current)return;try{await transcribe(c)}catch(e){failure.current=(e as Error).message;note('Verarbeitung pausiert · Audio bleibt auf diesem Gerät bis zum Schließen erhalten.')}});if(offset/16000>=7199)void stop()}
+ async function release(){streams.current.forEach(s=>s.getTracks().forEach(t=>t.stop()));streams.current=[];node.current?.disconnect();node.current=null;try{await audio.current?.close()}catch{}audio.current=null;try{await wake.current?.release()}catch{}wake.current=null}
+ async function start(value:Meeting){if(['starting','recording','processing'].includes(phaseRef.current))return;if(hasBackup&&phaseRef.current==='error'){setError('Bitte zuerst die Aufnahme sichern oder erneut verarbeiten.');return}if(!navigator.mediaDevices?.getDisplayMedia||!window.AudioWorkletNode){setError('Für den gesamten Meeting-Ton bitte Chrome oder Edge auf Mac oder Windows verwenden. Safari und iPhone unterstützen diesen Aufnahmeweg nicht vollständig.');return}
+ state('starting');setError('');setElapsed(0);setLevel(false);failure.current='';finalizing.current=false;chunks.current=[];queue.current=Promise.resolve();meeting.current=value;setHasBackup(false);
+ try{
+  // Must be called directly in the click gesture, before any network request.
+  const shared=await navigator.mediaDevices.getDisplayMedia({video:true,audio:true,preferCurrentTab:true} as DisplayMediaStreamOptions);streams.current.push(shared);
+  if(!shared.getAudioTracks().length)throw Error('Kein Meeting-Ton freigegeben. Chrome oder Edge öffnen, den Teamflow-Tab wählen und „Tab-Audio teilen“ einschalten.');
+  const mic=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true},video:false});mic.getAudioTracks().forEach(t=>{t.enabled=!muted.current});streams.current.push(mic);
+  const ctx=new AudioContext({sampleRate:16000});audio.current=ctx;await ctx.audioWorklet.addModule('/teamflow/teamflow-audio-worklet.js');if(ctx.sampleRate!==16000)throw Error('Dieser Browser unterstützt die benötigte Audioabtastrate nicht.');
+  const processor=new AudioWorkletNode(ctx,'teamflow-pcm');node.current=processor;
+  processor.port.onmessage=e=>{if(e.data.samples)accept(e.data.samples,e.data.offset);if(e.data.flushed){flush.current?.();flush.current=null}if(typeof e.data.level==='number')setLevel(e.data.level>0.006)};
+  ctx.createMediaStreamSource(new MediaStream(shared.getAudioTracks())).connect(processor);ctx.createMediaStreamSource(mic).connect(processor);const silent=ctx.createGain();silent.gain.value=0;processor.connect(silent).connect(ctx.destination);await ctx.resume();
+  shared.getVideoTracks()[0]?.addEventListener('ended',()=>{if(phaseRef.current==='recording')void stop()});began.current=Date.now();state('recording');note('Groq-Cloud aktiv · Ton wird abschnittsweise übertragen. Tab geöffnet lassen.');try{wake.current=await navigator.wakeLock?.request('screen')||null}catch{}
+ }catch(e){await release();state('error');setError((e as Error).message)}
+ }
+ async function analyze(){
+  await queue.current;
+  for(const c of chunks.current)await transcribe(c);
+  const transcript=chunks.current.map(c=>{const sec=Math.floor(c.offset/16000);return `[${Math.floor(sec/60).toString().padStart(2,'0')}:${(sec%60).toString().padStart(2,'0')}]\n${c.text||''}`}).join('\n\n');
+  if(!chunks.current.length||!chunks.current.some(c=>c.text?.trim()))throw Error('Keine Sprache erkannt. Aufnahme herunterladen und Audiofreigabe prüfen.');
+  const sections:string[]=[];let rest=transcript;while(rest){let cut=Math.min(12000,rest.length);if(cut<rest.length){const space=rest.lastIndexOf(' ',cut);if(space>6000)cut=space}sections.push(rest.slice(0,cut));rest=rest.slice(cut)}
+  const results=[];for(let i=0;i<sections.length;i++){note(`Zusammenfassung und Aufgaben · Abschnitt ${i+1}/${sections.length}`);results.push(await request({action:'summarize',date:meeting.current!.date,transcript:sections[i]}))}
+  const tasks=results.flatMap(r=>r.todos||[]).filter((t,i,a)=>a.findIndex(x=>x.title===t.title&&x.assignee===t.assignee)===i).slice(0,100);
+  const result={schema:'teamflow.local-ai.v1',provider:'groq',id:crypto.randomUUID(),sourceMeetingId:meeting.current!.id,meeting:{title:meeting.current!.title,date:meeting.current!.date},transcript:transcript.slice(0,500000),summary:results.map((r,i)=>results.length>1?`Abschnitt ${i+1}\n${r.summary}`:r.summary).join('\n\n').slice(0,20000),keyPoints:results.flatMap(r=>r.keyPoints||[]).slice(0,100),decisions:results.flatMap(r=>r.decisions||[]).slice(0,100),todos:tasks,warnings:['Mit Groq verarbeitet. Automatische Spracherkennung kann Fehler enthalten. Sprecheridentitäten werden nicht erraten.','Bei längeren Meetings wird die Zusammenfassung abschnittsweise erstellt. Aufgaben sind Vorschläge und müssen geprüft werden.',...(transcript.length>500000?['Das Transkript überschreitet die Anzeigegrenze. Audio zur vollständigen Sicherung herunterladen.']:[])]};
+  parseLocalProtocol(result);state('done');note('KI-Protokoll bereit · Transkript, Zusammenfassung und Aufgaben prüfen.');callback.current(result);
+ }
+ async function stop(){if(phaseRef.current!=='recording'||finalizing.current)return;finalizing.current=true;state('processing');note('Aufnahme beendet · ausstehende Abschnitte werden verarbeitet …');
+ try{await new Promise<void>((resolve,reject)=>{const timer=setTimeout(()=>{flush.current=null;reject(Error('Audioabschluss unterbrochen. Vorhandene Abschnitte bitte sichern.'))},5000);flush.current=()=>{clearTimeout(timer);resolve()};node.current?.port.postMessage('flush')});await release();await analyze()}catch(e){await release();state('error');setError((e as Error).message+' Audiodatei bitte sichern; dieses Fenster geöffnet lassen.')}finally{finalizing.current=false}
+ }
+ async function retry(){if(['recording','starting','processing'].includes(phaseRef.current)||!chunks.current.length)return;state('processing');setError('');failure.current='';try{await analyze()}catch(e){state('error');setError((e as Error).message)}}
+ function download(){if(!chunks.current.length)return;const blob=pcmWav(chunks.current.map(c=>c.pcm),chunks.current.reduce((n,c)=>n+c.pcm.byteLength,0));const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='Teamflow-Aufnahme.wav';a.click();setTimeout(()=>URL.revokeObjectURL(url),60000)}
+ function setMicrophoneMuted(v:boolean){muted.current=v;streams.current[1]?.getAudioTracks().forEach(t=>{t.enabled=!v})}
+ useEffect(()=>{document.documentElement.dataset.teamflowAiActive=['starting','recording','processing'].includes(phase)?'true':'false';window.dispatchEvent(new Event('teamflow:call-state'));return()=>{delete document.documentElement.dataset.teamflowAiActive;window.dispatchEvent(new Event('teamflow:call-state'))}},[phase]);
+ useEffect(()=>{live.current=true;const timer=setInterval(()=>{if(phaseRef.current==='recording'){setElapsed(Math.floor((Date.now()-began.current)/1000));if(Date.now()-began.current>=7200000)void stop()}},1000);const unload=(e:BeforeUnloadEvent)=>{if(['recording','starting','processing'].includes(phaseRef.current)||chunks.current.length){e.preventDefault();e.returnValue=''}};window.addEventListener('beforeunload',unload);return()=>{live.current=false;clearInterval(timer);window.removeEventListener('beforeunload',unload);void release()}},[]);
+ return {phase,elapsed,error,progress,level,hasBackup,start,stop,retry,download,setMicrophoneMuted};
+}

@@ -1,0 +1,13 @@
+# Groq meeting processing
+
+`GROQ_API_KEY` is a Supabase secret only. No API key is sent to browsers or committed.
+Deploy `index.ts` as `teamflow-ai` after applying `supabase/groq.sql`.
+Gateway JWT verification is disabled for the explicitly requested public, account-free workspace. This endpoint is public; CORS does not authenticate users. Shared SQL counters limit requests to 100/hour and 300/day, audio to 6,000 seconds/hour and 21,600/day (UTC). Anonymous misuse can exhaust these limits; these are not provider billing controls. Do not enable paid billing to satisfy a free-only requirement. Actual Groq plan/limits must be checked in the owner's console.
+
+Chrome/Edge desktop captures user-approved tab audio and microphone, mixing into mono 16 kHz PCM via AudioWorklet. A minute-long WAV is independently valid; no container concatenation or broken webm slicing. Segments are sent during the recording to Whisper Large V3 Turbo. Browser microphone mute follows JaaS. Ending capture flushes its tail and waits for queued transcripts. The full transcript is kept separately; gpt-oss-20b generates section summaries and evidence-backed unconfirmed tasks. No guessed speaker labels. Long summaries are explicitly section-based. Runtime cap: 2 hours per recording. Boundary words and speech recognition may be imperfect.
+
+Audio is held in browser memory until a new capture or closing/reloading. Download WAV before closing, especially after any error. Retry reuses already-transcribed segments. Browser permission prompts cannot be removed. The recorder tab must stay open; locking/sleeping or mobile background suspension can interrupt capture. One desktop records, other participants can use phones/tablets. Safari/iOS do not provide the required complete tab-audio capture path.
+
+Audio and text go through Supabase to Groq. Neither is persisted by this function or logged by application code. Provider handling is separate: https://console.groq.com/docs/your-data . Results are not added to the public workspace until reviewed and explicitly shared. Existing local helper imports remain compatible.
+
+Verified: live synthetic audio transcription and synthetic meeting summarization, frontend controller/unit checks, TypeScript and static build. Real multiparty/browser audio capture still needs a short user test on the intended Mac/Windows devices.
