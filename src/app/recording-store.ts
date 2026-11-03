@@ -1,0 +1,8 @@
+// Device-local recovery only. Never publishes audio to the shared workspace.
+import type {Meeting} from '../lib/team-sync-core';
+export type AudioChunk={pcm:ArrayBuffer;offset:number;text?:string};
+let database:Promise<IDBDatabase>|null=null;
+function db(){if(!database)database=new Promise<IDBDatabase>((resolve,reject)=>{if(typeof indexedDB==='undefined'){reject(Error('Lokaler Aufnahmespeicher ist nicht verfügbar.'));return}const r=indexedDB.open('teamflow-recording-recovery',1);r.onupgradeneeded=()=>r.result.createObjectStore('capture');r.onsuccess=()=>resolve(r.result);r.onerror=()=>{database=null;reject(r.error)}});return database}
+export async function writeCapture(key:string,value:unknown){const d=await db();await new Promise<void>((resolve,reject)=>{const t=d.transaction('capture','readwrite');t.objectStore('capture').put(value,key);t.oncomplete=()=>resolve();t.onerror=()=>reject(t.error);t.onabort=()=>reject(t.error)})}
+export async function readCapture(){const d=await db();return new Promise<{meeting:Meeting|null;chunks:AudioChunk[];result?:unknown}>((resolve,reject)=>{const t=d.transaction('capture','readonly'),s=t.objectStore('capture'),keys=s.getAllKeys(),values=s.getAll();t.oncomplete=()=>{const map=new Map(keys.result.map((k,i)=>[String(k),values.result[i]]));resolve({meeting:map.get('meeting')||null,chunks:[...map].filter(([k])=>k.startsWith('chunk:')).map(([,v])=>v).sort((a,b)=>a.offset-b.offset),result:map.get('result')})};t.onerror=()=>reject(t.error)})}
+export async function eraseCapture(){const d=await db();await new Promise<void>((resolve,reject)=>{const t=d.transaction('capture','readwrite');t.objectStore('capture').clear();t.oncomplete=()=>resolve();t.onerror=()=>reject(t.error)})}

@@ -59,11 +59,13 @@ export function RecordingControls({controller:c,meeting,joined}:{controller:Meet
  const [setupOpen,setSetupOpen]=useState(false);
  const q=c.cloud;
  if(!c.native)return <div className="meeting-recording cloud-recording"><div className="meeting-recording-actions">
- <button className="video-copy" disabled={!joined||['starting','recording','processing'].includes(q.phase)} onClick={()=>void q.start(meeting)}>{q.phase==='starting'?'Ton freigeben …':'● Aufnahme starten'}</button>
+ <button className="video-copy" disabled={!joined||!q.supported||q.hasBackup||['restoring','starting','recording','processing'].includes(q.phase)} onClick={()=>void q.start(meeting)}>{q.phase==='starting'?'Ton freigeben …':'● Aufnahme starten'}</button>
  {q.phase==='recording'&&<button className="call-leave" onClick={()=>void q.stop()}>■ Aufnahme stoppen</button>}
  {q.hasBackup&&q.phase!=='recording'&&<button className="video-copy" onClick={q.download}>Audio sichern ↓</button>}
+ {q.hasBackup&&!['recording','processing','starting'].includes(q.phase)&&<button className="video-copy" onClick={()=>void q.clear()}>Neue Aufnahme vorbereiten</button>}
  {q.phase==='error'&&q.hasBackup&&<button className="video-copy" onClick={()=>void q.retry()}>Erneut verarbeiten</button>}
  <span className={q.phase==='recording'?'recording-live':'recording-state'} role="status">{q.phase==='recording'?`● REC · ${Math.floor(q.elapsed/60).toString().padStart(2,'0')}:${(q.elapsed%60).toString().padStart(2,'0')} · ${q.level?'Ton erkannt':'Momentan kein Ton'}`:q.phase==='processing'?'KI verarbeitet …':q.phase==='done'?'KI-Protokoll bereit':joined?'Bereit zur Aufnahme':'Zuerst dem Meeting beitreten'}</span></div>
+ {!q.supported&&<p role="status">Die Aufnahme des gesamten Meeting-Tons benötigt Chrome oder Edge auf Mac oder Windows. In Safari oder auf dem iPhone kannst du teilnehmen, aber hier keine vollständige Meetingaufnahme starten.</p>}{q.storageWarning&&<p role="alert">{q.storageWarning}</p>}
  {q.progress&&<p className="recording-state" role="status">{q.progress}</p>}{q.error&&<p role="alert">{q.error}</p>}
  <small>Groq-Cloud · Audio und Transkript werden zur Verarbeitung an Groq gesendet. Eine Person zeichnet in Chrome oder Edge auf Mac/Windows auf: Teamflow-Tab wählen und „Tab-Audio teilen“ aktivieren. Mikrofon folgt eurer Meeting-Stummschaltung. Maximal 2 Stunden je Aufnahme; kostenlose Kontingente können die Verarbeitung begrenzen. Keine Helfer-App nötig. Dieses Fenster geöffnet lassen. Beim Verlassen auf diesem Gerät endet die Aufnahme; danach erscheinen die Ergebnisse im KI-Protokoll zur Prüfung.</small>
  </div>;

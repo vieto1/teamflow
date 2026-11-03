@@ -1,0 +1,4 @@
+const vm=require('vm'),fs=require('fs'),assert=require('assert');let Processor;const messages=[];
+vm.runInNewContext(fs.readFileSync('public/teamflow-audio-worklet.js','utf8'),{AudioWorkletProcessor:class{constructor(){this.port={postMessage:m=>messages.push(m)}}},registerProcessor:(name,p)=>{Processor=p},Int16Array,Math});
+const p=new Processor();for(let i=0;i<750;i++)p.process([[new Float32Array(128).fill(0.2)]]);
+assert(messages.some(m=>m.checkpoint),'Checkpoint is emitted before the first full minute');p.port.onmessage({data:'flush'});const final=messages.find(m=>m.samples);assert.equal(final.samples.byteLength,96000*2);assert.equal(final.offset,0);assert(messages.some(m=>m.flushed));p.port.onmessage({data:'flush'});assert.equal(messages.filter(m=>m.samples).length,1,'Repeated stops cannot duplicate audio');console.log('AudioWorklet: 5-second checkpoints, short-recording tail flush and no duplicate final chunk passed.');
