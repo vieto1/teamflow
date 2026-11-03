@@ -54,7 +54,7 @@ Deno.serve(async(req:Request)=>{
   const text=(v:unknown,n:number)=>typeof v==='string'?v.slice(0,n):'';
   const list=(v:unknown)=>Array.isArray(v)?v.slice(0,12).map(x=>text(x,2000)).filter(Boolean):[];
   const source=String((body as Record<string,unknown>).transcript);
-  const todos=(Array.isArray(result.todos)?result.todos:[]).slice(0,20).filter((t:Record<string,unknown>)=>t&&typeof t==='object'&&typeof t.evidence==='string'&&t.evidence.trim()&&source.includes(t.evidence)).map((t:Record<string,unknown>)=>({id:crypto.randomUUID(),title:text(t.title,500),assignee:people.includes(String(t.assignee))?t.assignee:'Nicht zugeordnet',dueDate:/^\d{4}-\d{2}-\d{2}$/.test(String(t.dueDate))?t.dueDate:'',evidence:text(t.evidence,500)})).filter((t:{title:string})=>t.title.trim());
+  const todos=(Array.isArray(result.todos)?result.todos:[]).slice(0,20).filter((t:Record<string,unknown>)=>t&&typeof t==='object'&&typeof t.evidence==='string'&&t.evidence.trim()&&source.includes(t.evidence)).map((t:Record<string,unknown>)=>({id:crypto.randomUUID(),title:text(t.title,500),assignee:people.includes(String(t.assignee))?t.assignee:'Nicht zugeordnet',dueDate:/^\d{4}-\d{2}-\d{2}$/.test(String(t.dueDate))&&source.includes(String(t.dueDate))&&!isNaN(Date.parse(String(t.dueDate)+'T12:00:00Z'))&&new Date(String(t.dueDate)+'T12:00:00Z').toISOString().slice(0,10)===t.dueDate?t.dueDate:'',evidence:text(t.evidence,500)})).filter((t:{title:string})=>t.title.trim());
   return reply({summary:text(result.summary,8000),keyPoints:list(result.keyPoints),decisions:list(result.decisions),todos});
  }catch{return reply({error:'KI-Verarbeitung unterbrochen. Bitte Aufnahme sichern und erneut versuchen.'},503)}
 });
