@@ -245,3 +245,15 @@ body::after { content:''; position:fixed; inset:0; z-index:-1; pointer-events:no
 .app-shell .glass-header-brand img { width:40px; height:40px; border-radius:12px; display:block; }
 .glass-header-brand small { letter-spacing:.3px; font-size:9px; }
 @media(max-width:790px) { .app-shell .glass-header-brand img { width:30px; height:30px; border-radius:9px; } }
+
+
+/* Local AI setup stays in the meeting, with an explicit install boundary. */
+.meeting-ai-setup { display:grid; gap:16px; margin:16px 0; padding:20px; border:1px solid var(--separator); border-radius:18px; background:var(--glass-flat); max-height:45vh; overflow:auto; }
+.meeting-ai-setup h3 { font-size:18px; margin:6px 0 9px; color:var(--ink); }
+.meeting-ai-setup p,.meeting-ai-setup li { font-size:13px; line-height:1.7; color:var(--text-soft); }
+.meeting-ai-setup p { margin:0; }.meeting-ai-setup ol { margin:0; padding-left:20px; display:grid; gap:10px; }
+.meeting-ai-downloads { display:flex; flex-wrap:wrap; gap:10px; }
+.meeting-ai-setup a:not(.primary-button):not(.secondary-button) { text-decoration:underline; color:var(--blue); }
+.meeting-ai-setup details>summary { cursor:pointer; color:var(--ink); font-size:13px; padding:8px 0; }
+.meeting-ai-setup details[open] p { margin-bottom:12px; }
+@media(max-width:650px) { .meeting-ai-setup { padding:15px; max-height:50vh; }.meeting-ai-downloads { flex-direction:column; } }
