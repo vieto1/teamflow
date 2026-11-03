@@ -4,7 +4,7 @@ const PREFIX='teamflow-pwa-';
 const CACHE=PREFIX+VERSION;
 const BASE=new URL('./',self.location).pathname;
 const OFFLINE=BASE+'offline.html';
-self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll([OFFLINE,BASE+'tf-monogram-192-v1.png']))));
+self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll([OFFLINE,BASE+'exit-shift-192-v1.png']))));
 self.addEventListener('activate',event=>event.waitUntil((async()=>{for(const key of await caches.keys())if(key.startsWith(PREFIX)&&key!==CACHE)await caches.delete(key);await self.clients.claim()})()));
 self.addEventListener('message',event=>{if(event.data?.type==='SKIP_WAITING')self.skipWaiting()});
 self.addEventListener('fetch',event=>{

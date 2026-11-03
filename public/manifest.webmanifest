@@ -1,7 +1,7 @@
 {
   "id": "/teamflow/",
-  "name": "Teamflow",
-  "short_name": "Teamflow",
+  "name": "Exit",
+  "short_name": "Exit",
   "description": "Meetings, Aufgaben und Dateien für euer Team.",
   "lang": "de-DE",
   "start_url": "/teamflow/?source=app",
@@ -10,8 +10,8 @@
   "background_color": "#080f17",
   "theme_color": "#080f17",
   "icons": [
-    {"src": "/teamflow/tf-monogram-192-v1.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
-    {"src": "/teamflow/tf-monogram-512-v1.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
-    {"src": "/teamflow/tf-monogram-maskable-v1.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+    {"src": "/teamflow/exit-shift-192-v1.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+    {"src": "/teamflow/exit-shift-512-v1.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
+    {"src": "/teamflow/exit-shift-512-v1.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
   ]
 }
