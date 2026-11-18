@@ -83,7 +83,7 @@ export default function Home(){
    <button aria-current={section==='tasks'?'page':undefined} aria-label="Aufgaben" className={section==='tasks'?'nav-item active':'nav-item'} onClick={()=>setSection('tasks')}><span className="nav-icon"><Icon name="check"/></span> Aufgaben <span className="nav-count">{openTodos}</span></button>
    <button aria-current={section==='team'?'page':undefined} aria-label="Team" className={section==='team'?'nav-item active':'nav-item'} onClick={()=>setSection('team')}><span className="nav-icon"><Icon name="team"/></span> Team</button>
    <button aria-current={section==='ai'?'page':undefined} aria-label="KI-Protokoll" aria-describedby={protocolUnread&&!activeCall?'ai-ready-notice':undefined} className={section==='ai'?'nav-item active':'nav-item'} onClick={()=>setSection('ai')}><span className="nav-icon"><Icon name="ai"/>{protocolUnread&&<span className="ai-unread-badge" aria-hidden="true">1</span>}</span><span className="sr-only">{protocolUnread?'1 neues Protokoll. ':''}</span> KI-Protokoll</button>
-   <button aria-current={section==='board'?'page':undefined} aria-label="Whiteboard" className={section==='board'?'nav-item active':'nav-item'} onClick={()=>setSection('board')}><span className="nav-icon"><Icon name="files"/></span> Whiteboard</button>
+   <button aria-current={section==='board'?'page':undefined} aria-label="Whiteboard" className={section==='board'?'nav-item active':'nav-item'} onClick={()=>setSection('board')}><span className="nav-icon"><Icon name="whiteboard"/></span> Whiteboard</button>
    <button aria-current={section==='files'?'page':undefined} aria-label="Dateiboard" className={section==='files'?'nav-item active':'nav-item'} onClick={()=>setSection('files')}><span className="nav-icon"><Icon name="files"/></span> Dateiboard</button>
    <button aria-current={section==='notifications'?'page':undefined} aria-label="Benachrichtigungen" className={section==='notifications'?'nav-item active':'nav-item'} onClick={()=>setSection('notifications')}><span className="nav-icon">♧</span> Benachrichtigungen</button>
   </nav><div className="sidebar-bottom"><div className="help-card"><div className="help-spark">✳</div><strong>Weniger Nacharbeit,<br/>mehr Klarheit.</strong><p>Meetings werden zu konkreten nächsten Schritten.</p></div></div></aside>
@@ -142,6 +142,7 @@ function Overview({meetings,todos,onAgenda,onTask,onPerson,onMeeting,onEdit,onAd
 function Icon({name}:{name:string}){
  const paths:Record<string,React.ReactNode>={
  ai:<><path d="m12 3 2.6 6.4L21 12l-6.4 2.6L12 21l-2.6-6.4L3 12l6.4-2.6L12 3Z"/><path d="M20 3v4m-2-2h4"/></>,
+ whiteboard:<><rect x="3" y="3" width="18" height="13" rx="2"/><path d="M12 16v5m-5 0h10M7 12l4-5 3 3 3-4"/></>,
  files:<><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></>,
  video:<><rect x="2" y="5" width="13" height="14" rx="3"/><path d="m15 10 7-4v12l-7-4z"/></>,
  home:<><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></>,
